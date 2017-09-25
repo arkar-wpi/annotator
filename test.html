@@ -12,6 +12,7 @@
 			<canvas id="canvas" width="500" height="500"></canvas>
 			<br>
 			<input type='file' name='img' size='65' id='uploadimage' />
+			<button type="button" id='clear_all'>Clear All</button>
 		</div>
 		<script type="text/javascript">
 		var canvas = document.getElementById('canvas');
@@ -45,19 +46,15 @@
 
 		function init() {
 			console.log("AMT Annotator")
-
-			var canvas = document.getElementById('canvas');
-			if (canvas.getContext){
-				var ctx = canvas.getContext('2d')
-				ctx.fillRect(25, 25, 100, 100);
-    		ctx.clearRect(45, 45, 60, 60);
-    		ctx.strokeRect(50, 50, 50, 50);
-			}
 		}
 
 		function getXY(e) {
     var r = canvas.getBoundingClientRect();
     return {x: e.clientX - r.left, y: e.clientY - r.top}
+		}
+
+		function clearall(ev){
+			ctx.clearRect(0,0,canvas.width,canvas.height);
 		}
 
 		function draw(ev) {
@@ -76,6 +73,7 @@
 		    }
 		}
 		document.getElementById("uploadimage").addEventListener("change", draw, false)
+		document.getElementById("clear_all").addEventListener("click", clearall, false)
 		</script>
 	</body>
 </html>
