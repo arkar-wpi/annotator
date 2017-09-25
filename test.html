@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>AMT Annotator</title>
+		<style>
+			canvas {border: 1px solid black;}
+		</style>
+	</head>
+	<body onload="init();">
+		<div id="container">
+			<canvas id="canvas" width="500" height="500"></canvas>
+			<br>
+			<input type='file' name='img' size='65' id='uploadimage' />
+		</div>
+		<script type="text/javascript">
+		var canvas = document.getElementById('canvas');
+		var ctx = canvas.getContext('2d')
+		var startx, starty
+		var endx, endy
+		var line, isDown;
+
+		canvas.onmousedown = function(e) {
+    	var pos = getXY(e);
+			startx = pos['x']
+			starty = pos['y']
+		}
+
+		canvas.onmouseup = function(e) {
+			var pos = getXY(e);
+			endx = pos['x']
+			endy = pos['y']
+
+			ctx.strokeStyle = 'red';
+			ctx.beginPath();
+		  ctx.moveTo(startx, starty);
+		  ctx.lineTo(endx, endy);
+		  ctx.lineWidth = 2;
+			ctx.stroke();
+			ctx.strokeRect(startx, starty, Math.abs(startx-endx), Math.abs(starty-endy));
+		  // set line color
+
+			console.log(`Strting point ${startx}, ${starty} and end point ${endx}, ${endy}`)
+		}
+
+		function init() {
+			console.log("AMT Annotator")
+
+			var canvas = document.getElementById('canvas');
+			if (canvas.getContext){
+				var ctx = canvas.getContext('2d')
+				ctx.fillRect(25, 25, 100, 100);
+    		ctx.clearRect(45, 45, 60, 60);
+    		ctx.strokeRect(50, 50, 50, 50);
+			}
+		}
+
+		function getXY(e) {
+    var r = canvas.getBoundingClientRect();
+    return {x: e.clientX - r.left, y: e.clientY - r.top}
+		}
+
+		function draw(ev) {
+		    console.log(ev);
+		    var ctx = document.getElementById('canvas').getContext('2d'),
+		        img = new Image(),
+		        f = document.getElementById("uploadimage").files[0],
+		        url = window.URL || window.webkitURL,
+		        src = url.createObjectURL(f);
+
+		    img.src = src;
+		    img.onload = function() {
+					ctx.drawImage(img, 0, 0, img.width, img.height,
+						 0, 0, canvas.width, canvas.height);
+		        url.revokeObjectURL(src);
+		    }
+		}
+		document.getElementById("uploadimage").addEventListener("change", draw, false)
+		</script>
+	</body>
+</html>
