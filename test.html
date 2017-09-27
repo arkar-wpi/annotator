@@ -1,79 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<title>AMT Annotator</title>
-		<style>
-			canvas {border: 1px solid black;}
-		</style>
-	</head>
-	<body onload="init();">
-		<div id="container">
-			<canvas id="canvas" width="500" height="500"></canvas>
-			<br>
-			<input type='file' name='img' size='65' id='uploadimage' />
-			<button type="button" id='clear_all'>Clear All</button>
-		</div>
-		<script type="text/javascript">
-		var canvas = document.getElementById('canvas');
-		var ctx = canvas.getContext('2d')
-		var startx, starty
-		var endx, endy
-		var line, isDown;
+<head>
+    <meta charset="utf-8">
+    <title>AMT Annotator</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <br>
+    <input type='file' name='img' size='65' id='uploadimage'/>
+    <button type="button" id='clear_all'>Clear All</button>
+</div>
+<script>
 
-		canvas.onmousedown = function(e) {
-    	var pos = getXY(e);
-			startx = pos['x']
-			starty = pos['y']
-		}
+    function Annotator() {
+        this.canvas = document.getElementById('canvas');
+        this.ctx = canvas.getContext('2d');
+        this.uploadImageButton = document.getElementById("uploadimage");
+        this.clearAllButton = document.getElementById("clear_all");
+        this.uploadImageButton.addEventListener('change', this.drawImage.bind(this));
+        this.clearAllButton.addEventListener('click', this.clearAll.bind(this));
+        this.canvas.addEventListener('mousedown', this.canvasMouseDown.bind(this));
+        this.canvas.addEventListener('mouseup', this.canvasMouseUp.bind(this));
+    }
 
-		canvas.onmouseup = function(e) {
-			var pos = getXY(e);
-			endx = pos['x']
-			endy = pos['y']
+    Annotator.prototype.canvasMouseUp = function (e) {
+        let pos = getXY(e);
+        this.endX = pos['x'];
+        this.endY = pos['y'];
 
-			ctx.strokeStyle = 'red';
-			ctx.beginPath();
-		  ctx.moveTo(startx, starty);
-		  ctx.lineTo(endx, endy);
-		  ctx.lineWidth = 2;
-			ctx.stroke();
-			ctx.strokeRect(startx, starty, Math.abs(startx-endx), Math.abs(starty-endy));
-		  // set line color
+        this.ctx.strokeStyle = 'red';
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.startX, this.startY);
+        this.ctx.lineTo(this.endX, this.endY);
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+        this.ctx.strokeRect(this.startX, this.startY, Math.abs(this.startX - this.endX), Math.abs(this.startY - this.endY));
 
-			console.log(`Strting point ${startx}, ${starty} and end point ${endx}, ${endy}`)
-		}
+        console.log(`Starting point ${this.startX}, ${this.startY} and end point ${this.endX}, ${this.endY}`)
+    };
 
-		function init() {
-			console.log("AMT Annotator")
-		}
+    Annotator.prototype.canvasMouseDown = function (e) {
+        let pos = getXY(e);
+        this.startX = pos['x'];
+        this.startY = pos['y'];
+    };
 
-		function getXY(e) {
-    var r = canvas.getBoundingClientRect();
-    return {x: e.clientX - r.left, y: e.clientY - r.top}
-		}
+    Annotator.prototype.drawImage = function () {
+        this.img = new Image();
+        let f = this.uploadImageButton.files[0],
+            url = window.URL || window.webkitURL;
+        const src = url.createObjectURL(f);
 
-		function clearall(ev){
-			ctx.clearRect(0,0,canvas.width,canvas.height);
-		}
+        this.img.src = src;
+        this.img.onload = function () {
+            this.ctx.drawImage(this.img, 0, 0, this.img.width, this.img.height, 0, 0, this.canvas.width, this.canvas.height);
+            url.revokeObjectURL(src);
+        }.bind(this);
+    };
 
-		function draw(ev) {
-		    console.log(ev);
-		    var ctx = document.getElementById('canvas').getContext('2d'),
-		        img = new Image(),
-		        f = document.getElementById("uploadimage").files[0],
-		        url = window.URL || window.webkitURL,
-		        src = url.createObjectURL(f);
+    Annotator.prototype.clearAll = function () {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    };
 
-		    img.src = src;
-		    img.onload = function() {
-					ctx.drawImage(img, 0, 0, img.width, img.height,
-						 0, 0, canvas.width, canvas.height);
-		        url.revokeObjectURL(src);
-		    }
-		}
-		document.getElementById("uploadimage").addEventListener("change", draw, false)
-		document.getElementById("clear_all").addEventListener("click", clearall, false)
-		</script>
-	</body>
+    function getXY(e) {
+        let r = canvas.getBoundingClientRect();
+        return {x: e.clientX - r.left, y: e.clientY - r.top}
+    }
+
+    window.onload = function () {
+        window.annotator = new Annotator();
+    };
+</script>
+</body>
 </html>
