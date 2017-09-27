@@ -30,7 +30,7 @@
     }
 
     Annotator.prototype.canvasMouseUp = function (e) {
-        let pos = getXY(e);
+        let pos = this.getCoords(e);
         this.endX = pos['x'];
         this.endY = pos['y'];
 
@@ -46,7 +46,7 @@
     };
 
     Annotator.prototype.canvasMouseDown = function (e) {
-        let pos = getXY(e);
+        let pos = this.getCoords(e);
         this.startX = pos['x'];
         this.startY = pos['y'];
     };
@@ -68,10 +68,10 @@
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     };
 
-    function getXY(e) {
+    Annotator.prototype.getCoords = function (e) {
         let r = canvas.getBoundingClientRect();
         return {x: e.clientX - r.left, y: e.clientY - r.top}
-    }
+    };
 
     window.onload = function () {
         window.annotator = new Annotator();
