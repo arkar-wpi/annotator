@@ -31,7 +31,7 @@
             }
             BBoxSelector.prototype.create_label_box = function(options) {
                 var label, _i, _len, _ref;
-                options.labels || (options.labels = ["object"]);
+                options.labels || (options.labels = ["                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "]);
                 this.label_box = $('<div class="label_box"></div>');
                 this.label_box.css({
                     "position": "absolute"
@@ -115,6 +115,7 @@
                 this.label_box.hide();
                 this.selector.hide();
                 data = this.rectangle();
+
                 data.label = $.trim(this.label_input.val().toLowerCase());
                 if (options.input_method !== 'fixed') {
                     this.label_input.val('');
@@ -123,6 +124,9 @@
             };
             BBoxSelector.prototype.rectangle = function() {
                 var rect, x1, x2, y1, y2;
+                console.log(this.offset.x, this.offset.y)
+                console.log(this.pointer.x, this.pointer.y)
+
                 x1 = Math.min(this.offset.x, this.pointer.x);
                 y1 = Math.min(this.offset.y, this.pointer.y);
                 x2 = Math.max(this.offset.x, this.pointer.x);
