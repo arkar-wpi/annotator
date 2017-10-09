@@ -32,10 +32,9 @@
         left: 0px;
     }
 </style>
-<script>
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
     function Annotator() {
-        this.annotations = []
+        this.annotations = [];
         this.canvas = document.getElementById('canvas');
         this.tempCanvas = document.getElementById('tempCanvas');
 //        var canvasOffset = this.canvas.offset();
@@ -92,7 +91,7 @@
 
     Annotator.prototype.canvasMouseDown = function (e) {
         let pos = this.getCoords(e);
-        this.press = 1
+        this.press = 1;
         this.startX = pos['x'];
         this.startY = pos['y'];
     };
@@ -149,6 +148,7 @@
 
     Annotator.prototype.clearAll = function () {
 //        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.annotations = [];
         this.refreshLines();
         this.refreshImage();
     };
@@ -161,39 +161,40 @@
     window.onload = function () {
         window.annotator = new Annotator();
     };
+
     //Get this working
-    $(document).ready(function() {
-        var assignment_id = "";
+//    $(document).ready(function() {
+        var annotator = new Annotator();
 //        var assignment_id = turkGetParam('assignmentId', "");
-        // Initialize the bounding-box annotator.
-        var annotator = new BBoxAnnotator({
-            url: "https://s3.amazonaws.com/wpi-gaze/00005000.jpg",
-            input_method: 'select', // Can be one of ['text', 'select', 'fixed']
-            labels: ["in", "out", "object"], // Label of the object.
-            onchange: function(entries) {
-                $("#annotation_data").val(JSON.stringify(entries));
-                if (entries.length > 0 &&
-                    assignment_id != "" &&
-                    assignment_id != "ASSIGNMENT_ID_NOT_AVAILABLE") {
-                    $("#submitButton").removeAttr("disabled");
-                }
-                else {
-                    $("#submitButton").attr("disabled", "disabled");
-                }
-            }
-        });
-        // Initialize the reset button.
-        $("#reset_button").click(function(e) {
-            annotator.clear_all();
-        });
-        // Disable the submission at the beginning.
-        $("#submitButton").attr("disabled", "disabled");
-        $("#submitButton").detach().appendTo("#button_paragraph");
-        if (assignment_id == "ASSIGNMENT_ID_NOT_AVAILABLE") {
-            $("#submitButton").val("This is preview");
-        }
-        console.log(assignment_id);
-    });
+//        // Initialize the bounding-box annotator.
+//        var annotator = new BBoxAnnotator({
+//            url: "https://s3.amazonaws.com/wpi-gaze/00005000.jpg",
+//            input_method: 'select', // Can be one of ['text', 'select', 'fixed']
+//            labels: ["in", "out", "object"], // Label of the object.
+//            onchange: function(entries) {
+//                $("#annotation_data").val(JSON.stringify(entries));
+//                if (entries.length > 0 &&
+//                    assignment_id != "" &&
+//                    assignment_id != "ASSIGNMENT_ID_NOT_AVAILABLE") {
+//                    $("#submitButton").removeAttr("disabled");
+//                }
+//                else {
+//                    $("#submitButton").attr("disabled", "disabled");
+//                }
+//            }
+//        });
+//        // Initialize the reset button.
+//        $("#reset_button").click(function(e) {
+//            annotator.clear_all();
+//        });
+//        // Disable the submission at the beginning.
+//        $("#submitButton").attr("disabled", "disabled");
+//        $("#submitButton").detach().appendTo("#button_paragraph");
+//        if (assignment_id == "ASSIGNMENT_ID_NOT_AVAILABLE") {
+//            $("#submitButton").val("This is preview");
+//        }
+//        console.log(assignment_id);
+//    });
 </script>
 </body>
 </html>
