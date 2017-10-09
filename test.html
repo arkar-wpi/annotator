@@ -66,7 +66,7 @@
         this.tempCtx.lineTo(this.endX, this.endY);
         this.tempCtx.lineWidth = 2;
         this.tempCtx.stroke();
-    }
+    };
 
     Annotator.prototype.transferLine = function(toX, toY){
         this.ctx.strokeStyle = 'red';
@@ -75,7 +75,7 @@
         this.ctx.lineTo(this.endX, this.endY);
         this.ctx.lineWidth = 2;
         this.ctx.stroke();
-    }
+    };
 
 
     Annotator.prototype.canvasMouseEnter = function (e) {
@@ -107,53 +107,31 @@
             this.endX = pos['x'];
             this.endY = pos['y'];
             this.refreshLines();
-//            this.refreshImage();
             this.drawLine(this.endX, this.endY);
-//            this.ctx.strokeStyle = 'red';
-//            this.drawLine(this.endX, this.endY);
         }
-    }
+    };
 
     Annotator.prototype.loadImage = function (src_url) {
         this.img = new Image();
         this.img.src = src_url;
-//        this.img.src = "https://s3.amazonaws.com/wpi-gaze/00005010.jpg";
         this.img.onload = function () {
             this.canvas.width = this.img.width;
             this.canvas.height = this.img.height;
             this.tempCanvas.width = this.img.width;
             this.tempCanvas.height = this.img.height;
             this.ctx.drawImage(this.img, 0, 0, this.img.width, this.img.height, 0, 0, this.canvas.width, this.canvas.height);
-//            url.revokeObjectURL(src);
         }.bind(this);
     };
 
     Annotator.prototype.refreshLines = function() {
         this.tempCtx.clearRect(0, 0, this.tempCanvas.width, this.canvas.height);
-    }
+    };
 
     Annotator.prototype.refreshImage = function() {
         this.ctx.drawImage(this.img, 0, 0, this.img.width, this.img.height, 0, 0, this.canvas.width, this.canvas.height);
-    }
-
-//    Annotator.prototype.drawImage = function () {
-//        this.img = new Image();
-//        let f = this.uploadImageButton.files[0],
-//            url = window.URL || window.webkitURL;
-//        const src = url.createObjectURL(f);
-////        this.img.src = src;
-//        this.img.src = "https://s3.amazonaws.com/wpi-gaze/00005010.jpg";
-//        this.img.onload = function () {
-//            this.canvas.width = this.img.width
-//            this.canvas.height = this.img.height
-//            this.ctx.drawImage(this.img, 0, 0, this.img.width, this.img.height, 0, 0, this.canvas.width, this.canvas.height);
-//            url.revokeObjectURL(src);
-//
-//        }.bind(this);
-//    };
+    };
 
     Annotator.prototype.clearAll = function () {
-//        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.annotations = [];
         this.refreshLines();
         this.refreshImage();
@@ -165,13 +143,9 @@
         return {x: e.clientX - r.left, y: e.clientY - r.top}
     };
 
-//    window.onload = function () {
-//        window.annotator = new Annotator();
-//    };
-
-    //Get this working
     $(document).ready(function() {
         var annotator = new Annotator({
+//            url: "${image_URL}";
             url: "https://s3.amazonaws.com/wpi-gaze/00005010.jpg",
             onchange: function(entries) {
                 $("#annotation_data").val(JSON.stringify(entries));
