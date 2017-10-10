@@ -7,37 +7,42 @@
         canvas {
             border: 1px solid black;
         }
+
+        #container {
+            position: relative;
+            width: 300px;
+            height: 200px;
+        }
+
+        #canvas, #tempCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
     </style>
 </head>
 <body>
-<link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet" />
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.js"></script>
+<h1>Draw the direction of the gaze from the anywhere inside the bounding box surrounding the head</h1>
 
-<p id="button_paragraph">
-    <button type="button" id='clear_all'>Clear All</button>
-    <input id="annotation_data" name="annotation_data" type="hidden" />
-</p>
-
-<div id="container">
-    <canvas id="canvas" width="500" height="500"></canvas>
-    <canvas id="tempCanvas" width="500" height="500"></canvas>
+<div>Click on the region inside the head bounding box and drag until the region/object/person/face&nbsp;where the
+    subject is looking by dragging the mouse. If the subject is looking out of the frame, draw the gaze direction&nbsp;until
+    the edge of the frame. If the subject is looking <b>*inwards*&nbsp;</b>or <strong>*outwards*</strong> of the
+    picture, click on the eyes (or) back of the head once and a cross will be drawn instead of a line.
 </div>
 
 
-<style>
+<p id="button_paragraph">
+    <button type="button" id='clear_all'>Clear All</button>
+    <button type="button" id='undo'>Undo</button>
+    <input id="annotation_data" name="annotation_data" type="hidden"/>
+</p>
 
-   #container {
-        position:relative;
-        width:300px;
-        height:200px;
-    }
-    #canvas, #tempCanvas {
-        position: absolute;
-        top: 0px;
-        left: 0px;
-    }
-</style>
+<div id="container">
+    <canvas id="canvas" width="500" height="500" oncontextmenu="return false"></canvas>
+    <canvas id="tempCanvas" width="500" height="500" oncontextmenu="return false"></canvas>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
     function Annotator(options) {
         this.annotations = [];
@@ -52,6 +57,10 @@
         this.loadImage(options.url);
         this.clearAllButton = document.getElementById("clear_all");
         this.clearAllButton.addEventListener('click', this.clearAll.bind(this));
+
+        this.undoButton = document.getElementById("undo");
+        this.undoButton.addEventListener('click', this.undo.bind(this));
+
         this.tempCanvas.addEventListener('mousedown', this.canvasMouseDown.bind(this));
         this.tempCanvas.addEventListener('mouseup', this.canvasMouseUp.bind(this));
         this.tempCanvas.addEventListener('mousemove', this.canvasMouseMove.bind(this));
@@ -60,7 +69,7 @@
 
     }
 
-    Annotator.prototype.drawLine = function(toX, toY){
+    Annotator.prototype.drawLine = function (toX, toY) {
         this.tempCtx.strokeStyle = 'red';
         this.tempCtx.beginPath();
         this.tempCtx.moveTo(this.startX, this.startY);
@@ -69,7 +78,7 @@
         this.tempCtx.stroke();
     };
 
-    Annotator.prototype.drawCross = function(toX, toY){
+    Annotator.prototype.drawCross = function (toX, toY) {
         let x = toX;
         let y = toY;
         this.ctx.strokeStyle = 'aqua';
@@ -87,10 +96,10 @@
 
     };
 
-    Annotator.prototype.transferLine = function(toX, toY){
+    Annotator.prototype.transferLine = function (toX, toY) {
         this.ctx.strokeStyle = 'red';
-        let distance = Math.sqrt(Math.pow(this.startX - toX,2) + Math.pow(this.startY - toY,2))
-        console.log(distance)
+        let distance = Math.sqrt(Math.pow(this.startX - toX, 2) + Math.pow(this.startY - toY, 2))
+        console.log(distance);
         if (distance < 3) {
             this.drawCross(toX, toY);
         } else {
@@ -109,12 +118,13 @@
 
     Annotator.prototype.canvasMouseUp = function (e) {
         let pos = this.getCoords(e);
-        this.press = 0
+        this.press = 0;
 
         this.endX = pos['x'];
         this.endY = pos['y'];
+        this.refreshLines();
         this.transferLine(this.endX, this.endY);
-        this.annotations.push({x1: this.startX, y1: this.startY, x2:this.endX, y2:this.endY});
+        this.annotations.push({x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY});
         console.log(this.annotations);
         return this.onchange(this.annotations);
     };
@@ -127,10 +137,11 @@
     };
 
     Annotator.prototype.canvasMouseMove = function (e) {
-        if (this.press == 1) {
+        if (this.press === 1) {
             let pos = this.getCoords(e);
             this.endX = pos['x'];
             this.endY = pos['y'];
+
             this.refreshLines();
             this.drawLine(this.endX, this.endY);
         }
@@ -148,12 +159,24 @@
         }.bind(this);
     };
 
-    Annotator.prototype.refreshLines = function() {
+    Annotator.prototype.refreshLines = function () {
         this.tempCtx.clearRect(0, 0, this.tempCanvas.width, this.canvas.height);
     };
 
-    Annotator.prototype.refreshImage = function() {
+    Annotator.prototype.refreshImage = function () {
         this.ctx.drawImage(this.img, 0, 0, this.img.width, this.img.height, 0, 0, this.canvas.width, this.canvas.height);
+    };
+
+    Annotator.prototype.undo = function () {
+        let last_point = this.annotations.pop();
+        console.log(last_point);
+        let x = Math.min(last_point['x1'], last_point['x2']);
+        let y = Math.min(last_point['y1'], last_point['y2']);
+        let width = Math.abs(last_point['x1'] - last_point['x2']);
+        let height = Math.abs(last_point['y1'] - last_point['y2']);
+        this.ctx.clearRect(x, y, width, height);
+
+        return this.onchange(this.annotations);
     };
 
     Annotator.prototype.clearAll = function () {
@@ -168,19 +191,19 @@
         return {x: e.clientX - r.left, y: e.clientY - r.top}
     };
 
-    $(document).ready(function() {
-        var annotator = new Annotator({
-//            url: "${image_URL}";
-            url: "https://s3.amazonaws.com/wpi-gaze/00005010.jpg",
-            onchange: function(entries) {
+    $(document).ready(function () {
+//        debugger;
+        new Annotator({
+//            url: "${image_URL}",
+            url: "https://s3.amazonaws.com/wpi-gaze/00005050.jpg",
+            onchange: function (entries) {
                 $("#annotation_data").val(JSON.stringify(entries));
 
                 if (entries.length > 0 &&
-                    assignment_id != "" &&
-                    assignment_id != "ASSIGNMENT_ID_NOT_AVAILABLE") {
+                    assignment_id !== "" &&
+                    assignment_id !== "ASSIGNMENT_ID_NOT_AVAILABLE") {
                     $("#submitButton").removeAttr("disabled");
-                }
-                else {
+                } else {
                     $("#submitButton").attr("disabled", "disabled");
                 }
             }
@@ -189,9 +212,9 @@
 //        var assignment_id = turkGetParam('assignmentId', "");
         var assignment_id = "";
         // Disable the submission at the beginning.
-        $("#submitButton").attr("disabled", "disabled");
+        $('#submitButton').attr("disabled", "disabled");
         $("#submitButton").detach().appendTo("#button_paragraph");
-        if (assignment_id == "ASSIGNMENT_ID_NOT_AVAILABLE") {
+        if (assignment_id === "ASSIGNMENT_ID_NOT_AVAILABLE") {
             $("#submitButton").val("This is preview");
         }
         console.log(assignment_id);
