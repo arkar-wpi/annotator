@@ -13,6 +13,7 @@
 <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet" />
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.js"></script>
+
 <p id="button_paragraph">
     <button type="button" id='clear_all'>Clear All</button>
     <input id="annotation_data" name="annotation_data" type="hidden" />
@@ -68,13 +69,37 @@
         this.tempCtx.stroke();
     };
 
-    Annotator.prototype.transferLine = function(toX, toY){
-        this.ctx.strokeStyle = 'red';
+    Annotator.prototype.drawCross = function(toX, toY){
+        let x = toX;
+        let y = toY;
+        this.ctx.strokeStyle = 'aqua';
         this.ctx.beginPath();
-        this.ctx.moveTo(this.startX, this.startY);
-        this.ctx.lineTo(this.endX, this.endY);
+
+        this.ctx.moveTo(x - 10, y - 10);
+        this.ctx.lineTo(x + 10, y + 10);
         this.ctx.lineWidth = 2;
         this.ctx.stroke();
+
+        this.ctx.moveTo(x + 10, y - 10);
+        this.ctx.lineTo(x - 10, y + 10);
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+
+    };
+
+    Annotator.prototype.transferLine = function(toX, toY){
+        this.ctx.strokeStyle = 'red';
+        let distance = Math.sqrt(Math.pow(this.startX - toX,2) + Math.pow(this.startY - toY,2))
+        console.log(distance)
+        if (distance < 3) {
+            this.drawCross(toX, toY);
+        } else {
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.startX, this.startY);
+            this.ctx.lineTo(this.endX, this.endY);
+            this.ctx.lineWidth = 2;
+            this.ctx.stroke();
+        }
     };
 
 
