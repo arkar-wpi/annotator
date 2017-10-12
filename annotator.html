@@ -75,7 +75,7 @@
 //        console.log(this.boxes.length);
         for (var i = 0; i < this.boxes.length; i++) {
             let b = this.boxes[i];
-            this.ctx.strokeStyle = 'orange';
+            this.ctx.strokeStyle = '#6bf442';
             this.ctx.lineWidth = 1;
             this.ctx.rect(b['x'],b['y'],b['w'],b['h']);
             this.ctx.stroke();
@@ -83,7 +83,7 @@
     };
 
     Annotator.prototype.drawLine = function (context, toX, toY) {
-        context.strokeStyle = 'red';
+        context.strokeStyle = '#f44a41';
         context.beginPath();
         context.moveTo(this.startX, this.startY);
         context.lineTo(this.endX, this.endY);
@@ -91,7 +91,7 @@
         context.stroke();
         context.beginPath();
         context.arc(this.endX, this.endY, 5, 0, 2 * Math.PI, false);
-        context.fillStyle = 'red';
+        context.fillStyle = '#f44a41';
         context.fill();
         context.stroke();
     };
@@ -99,7 +99,7 @@
     Annotator.prototype.drawCross = function (toX, toY) {
         let x = toX;
         let y = toY;
-        this.ctx.strokeStyle = 'aqua';
+        this.ctx.strokeStyle = '#41f4eb';
         this.ctx.beginPath();
 
         this.ctx.moveTo(x - 10, y - 10);
@@ -132,16 +132,18 @@
     };
 
     Annotator.prototype.canvasMouseUp = function (e) {
-        let pos = this.getCoords(e);
-        this.press = 0;
+        if (this.press === 1) {
+            let pos = this.getCoords(e);
+            this.press = 0;
 
-        this.endX = pos['x'];
-        this.endY = pos['y'];
-        this.refreshLines();
-        this.transferLine(this.endX, this.endY);
-        this.annotations.push({x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY});
-//        console.log(this.annotations);
-        return this.onchange(this.annotations);
+            this.endX = pos['x'];
+            this.endY = pos['y'];
+            this.refreshLines();
+            this.transferLine(this.endX, this.endY);
+            this.annotations.push({x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY});
+            //        console.log(this.annotations);
+            return this.onchange(this.annotations);
+        }
     };
 
     Annotator.prototype.canvasMouseDown = function (e) {
