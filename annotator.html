@@ -48,13 +48,14 @@
         this.annotations = [];
         this.canvas = document.getElementById('canvas');
         this.tempCanvas = document.getElementById('tempCanvas');
-//        var canvasOffset = this.canvas.offset();
-//        this.offsetX = canvasOffset.left;
-//        this.offsetY = canvasOffset.top;
         this.press = 0;
         this.ctx = canvas.getContext('2d');
         this.tempCtx = tempCanvas.getContext('2d');
-        this.loadImage(options.url);
+        this.boxes = options.boxes;
+        this.url = options.url;
+
+        this.loadImage();
+
         this.clearAllButton = document.getElementById("clear_all");
         this.clearAllButton.addEventListener('click', this.clearAll.bind(this));
 
@@ -65,17 +66,34 @@
         this.tempCanvas.addEventListener('mouseup', this.canvasMouseUp.bind(this));
         this.tempCanvas.addEventListener('mousemove', this.canvasMouseMove.bind(this));
         this.tempCanvas.addEventListener('mouseenter', this.canvasMouseEnter.bind(this));
+        this.tempCanvas.addEventListener('mouseout', this.canvasMouseOut.bind(this));
         this.onchange = options.onchange
 
     }
 
-    Annotator.prototype.drawLine = function (toX, toY) {
-        this.tempCtx.strokeStyle = 'red';
-        this.tempCtx.beginPath();
-        this.tempCtx.moveTo(this.startX, this.startY);
-        this.tempCtx.lineTo(this.endX, this.endY);
-        this.tempCtx.lineWidth = 2;
-        this.tempCtx.stroke();
+    Annotator.prototype.drawBoxes = function () {
+//        console.log(this.boxes.length);
+        for (var i = 0; i < this.boxes.length; i++) {
+            let b = this.boxes[i];
+            this.ctx.strokeStyle = 'orange';
+            this.ctx.lineWidth = 1;
+            this.ctx.rect(b['x'],b['y'],b['w'],b['h']);
+            this.ctx.stroke();
+        }
+    };
+
+    Annotator.prototype.drawLine = function (context, toX, toY) {
+        context.strokeStyle = 'red';
+        context.beginPath();
+        context.moveTo(this.startX, this.startY);
+        context.lineTo(this.endX, this.endY);
+        context.lineWidth = 2;
+        context.stroke();
+        context.beginPath();
+        context.arc(this.endX, this.endY, 5, 0, 2 * Math.PI, false);
+        context.fillStyle = 'red';
+        context.fill();
+        context.stroke();
     };
 
     Annotator.prototype.drawCross = function (toX, toY) {
@@ -97,17 +115,14 @@
     };
 
     Annotator.prototype.transferLine = function (toX, toY) {
-        this.ctx.strokeStyle = 'red';
         let distance = Math.sqrt(Math.pow(this.startX - toX, 2) + Math.pow(this.startY - toY, 2))
-        console.log(distance);
+//        console.log(distance);
         if (distance < 3) {
             this.drawCross(toX, toY);
         } else {
-            this.ctx.beginPath();
-            this.ctx.moveTo(this.startX, this.startY);
-            this.ctx.lineTo(this.endX, this.endY);
-            this.ctx.lineWidth = 2;
-            this.ctx.stroke();
+            this.endX = toX;
+            this.endY = toY;
+            this.drawLine(this.ctx, toX, toY);
         }
     };
 
@@ -125,7 +140,7 @@
         this.refreshLines();
         this.transferLine(this.endX, this.endY);
         this.annotations.push({x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY});
-        console.log(this.annotations);
+//        console.log(this.annotations);
         return this.onchange(this.annotations);
     };
 
@@ -143,19 +158,42 @@
             this.endY = pos['y'];
 
             this.refreshLines();
-            this.drawLine(this.endX, this.endY);
+            this.drawLine(this.tempCtx, this.endX, this.endY);
         }
     };
 
-    Annotator.prototype.loadImage = function (src_url) {
+    Annotator.prototype.canvasMouseOut = function (e) {
+        if (this.press === 1) {
+            let pos = this.getCoords(e);
+            this.press = 0;
+
+            this.endX = pos['x'];
+            this.endY = pos['y'];
+            this.refreshLines();
+            this.transferLine(this.endX, this.endY);
+            this.annotations.push({x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY});
+//            console.log(this.annotations);
+            return this.onchange(this.annotations);
+        }
+    };
+
+    Annotator.prototype.loadImage = function () {
         this.img = new Image();
-        this.img.src = src_url;
+        this.img.src = this.url;
         this.img.onload = function () {
             this.canvas.width = this.img.width;
             this.canvas.height = this.img.height;
             this.tempCanvas.width = this.img.width;
             this.tempCanvas.height = this.img.height;
             this.ctx.drawImage(this.img, 0, 0, this.img.width, this.img.height, 0, 0, this.canvas.width, this.canvas.height);
+            this.drawBoxes();
+
+            for (var i = 0; i < this.annotations.length; i++) {
+                var l = this.annotations[i];
+                this.startX = l['x1'];
+                this.startY = l['y1'];
+                this.transferLine(l['x2'], l['y2']);
+            }
         }.bind(this);
     };
 
@@ -163,26 +201,25 @@
         this.tempCtx.clearRect(0, 0, this.tempCanvas.width, this.canvas.height);
     };
 
-    Annotator.prototype.refreshImage = function () {
-        this.ctx.drawImage(this.img, 0, 0, this.img.width, this.img.height, 0, 0, this.canvas.width, this.canvas.height);
-    };
+//    Annotator.prototype.refreshImage = function () {
+//        this.ctx.drawImage(this.img, 0, 0, this.img.width, this.img.height, 0, 0, this.canvas.width, this.canvas.height);
+//        this.drawBoxes();
+//    };
 
     Annotator.prototype.undo = function () {
         let last_point = this.annotations.pop();
-        console.log(last_point);
-        let x = Math.min(last_point['x1'], last_point['x2']);
-        let y = Math.min(last_point['y1'], last_point['y2']);
-        let width = Math.abs(last_point['x1'] - last_point['x2']);
-        let height = Math.abs(last_point['y1'] - last_point['y2']);
-        this.ctx.clearRect(x, y, width, height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.loadImage();
 
         return this.onchange(this.annotations);
     };
 
     Annotator.prototype.clearAll = function () {
         this.annotations = [];
-        this.refreshLines();
-        this.refreshImage();
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+//        this.refreshLines();
+//        this.refreshImage();
+        this.loadImage();
         return this.onchange(this.annotations);
     };
 
@@ -195,8 +232,12 @@
 //        debugger;
         new Annotator({
 //            url: "${image_URL}",
-            url: "https://s3.amazonaws.com/wpi-gaze/00005050.jpg",
+//            boxes: ${bounding_box},
+            boxes: [{'y': 194, 'x': 246, 'h': 60, 'w': 60}, {'y': 224, 'x': 51, 'h': 52, 'w': 52},
+                {'y': 100, 'x': 273, 'h': 57, 'w': 57}, {'y': 188, 'x': 250, 'h': 69, 'w': 69}],
+            url: "https://s3.amazonaws.com/wpi-gaze/00005047.jpg",
             onchange: function (entries) {
+                console.log(entries);
                 $("#annotation_data").val(JSON.stringify(entries));
 
                 if (entries.length > 0 &&
@@ -217,7 +258,7 @@
         if (assignment_id === "ASSIGNMENT_ID_NOT_AVAILABLE") {
             $("#submitButton").val("This is preview");
         }
-        console.log(assignment_id);
+//        console.log(assignment_id);
     });
 </script>
 </body>
