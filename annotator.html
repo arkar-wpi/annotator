@@ -173,6 +173,7 @@
             this.transferLine(this.endX, this.endY);
             this.annotations.push({x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY});
 //            console.log(this.annotations);
+            this.press = 0;
             return this.onchange(this.annotations);
         }
     };
