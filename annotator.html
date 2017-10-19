@@ -230,14 +230,33 @@
     Annotator.prototype.transferLine = function (toX, toY) {
         let distance = Math.sqrt(Math.pow(this.startX - toX, 2) + Math.pow(this.startY - toY, 2))
         if (distance < 3) {
+            this.setCheckboxes(true);
             this.drawCross(toX, toY);
         } else {
             this.endX = toX;
             this.endY = toY;
+            this.setCheckboxes(false);
             this.drawLine(this.ctx, toX, toY);
         }
     };
 
+    Annotator.prototype.setCheckboxes = function(outFrame) {
+        if (outFrame){
+            $('#check_target').attr('checked', false);
+        } else {
+            $('#check_target').attr('checked', true);
+            if (this.endX > this.startX) {
+                $("#x_dir_right").attr('checked', 'checked');
+            } else {
+                $("#x_dir_left").attr('checked', 'checked');
+            }
+            if (this.endY < this.startY) {
+                $("#y_dir_up").attr('checked', 'checked');
+            } else {
+                $("#y_dir_down").attr('checked', 'checked');
+            }
+        }
+    };
 
     Annotator.prototype.canvasMouseEnter = function (e) {
         this.tempCanvas.style.cursor = 'crosshair';
