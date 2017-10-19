@@ -4,15 +4,62 @@
     <meta charset="utf-8">
     <title>AMT Annotator</title>
     <style>
+        html {
+            font-family: sans-serif;
+        }
+
+        label {
+            margin-right: 15px;
+            line-height: 32px;
+        }
+
+        button,
+        legend {
+            color: white;
+            background-color: black;
+            padding: 5px 10px;
+            border-radius: 0;
+            border: 0;
+            font-size: 14px;
+        }
+
+        button:hover,
+        button:focus {
+            color: #999;
+        }
+
+        button:active {
+            background-color: white;
+            color: black;
+            outline: 1px solid black;
+        }
+
         canvas {
             border: 1px solid black;
         }
 
-        #container {
-            position: relative;
-            width: 300px;
-            height: 200px;
+        .container_annotator {
+            float:left;
+            margin-right: 10px;
         }
+
+
+        /*#container, #attribute_container{*/
+            /*margin-right:10px;*/
+
+        /*}*/
+
+        #canvas_container {
+            position: relative;
+            float:left;
+        }
+
+        #attribute_container {
+            position: relative;
+            float: left;
+            display: none;
+        }
+
 
         #canvas, #tempCanvas {
             position: absolute;
@@ -37,18 +84,85 @@
     <input id="annotation_data" name="annotation_data" type="hidden"/>
 </p>
 
-<div id="container">
+<div class="container_annotator" id="canvas_container">
     <canvas id="canvas" width="500" height="500" oncontextmenu="return false"></canvas>
     <canvas id="tempCanvas" width="500" height="500" oncontextmenu="return false"></canvas>
 </div>
 
+<div class="container_annotator" id="attribute_container">
+    <form name="gaze_attributes">
+        <input type="checkbox" id="check_target" onChange="noTarget()">
+        <label for="check_target">The target is in the picture</label>
+        <br>
+        <div id="gaze_xy">
+            Is the person looking <strong>Left</strong> or <strong>Right</strong>?
+            <div>
+                <input type="radio" id="x_dir_left" class="no_target" name="x_direction" value="left">
+                <label for="x_dir_left">Left</label>
+                <input type="radio" id="x_dir_right" class="no_target" name="x_direction" value="right">
+                <label for="x_dir_right">Right</label>
+            </div>
+            Is the person looking <strong>Up</strong> or <strong>Down</strong>?
+            <div>
+                <input type="radio" id="y_dir_up" class="no_target" name="y_direction" value="up">
+                <label for="y_dir_up">Up</label>
+                <input type="radio" id="y_dir_down" class="no_target" name="y_direction" value="down">
+                <label for="y_dir_down">Down</label>
+            </div>
+        </div>
+        Is the person looking <strong>Towards</strong> the camera or <strong>Away</strong> from the camera?
+        <div>
+            <input type="radio" id="z_dir_towards" name="z_direction" value="towards">
+            <label for="z_dir_towards">Towards</label>
+            <input type="radio" id="z_dir_away" name="z_direction" value="away">
+            <label for="z_dir_away">Away</label>
+        </div>
+        <div>
+            <button type="button" id="btn_save" onclick="saveAttributes()">Save</button>
+        </div>
+    </form>
+</div>
+
+<br>
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
+    var line_annotations;
+
+    function noTarget() {
+        var elements = document.getElementsByClassName("no_target");
+        var el = document.getElementById("check_target");
+
+        for (var i = 0; i < elements.length; i++) {
+            if (el.checked) {
+                elements[i].disabled = true;
+
+            } else {
+                elements[i].disabled = false;
+
+            }
+        }
+    }
+
+    function saveAttributes() {
+        var hasTarget = $('#check_target').val();
+        var x_dir = $("input[name=x_direction]:checked").val();
+        var y_dir = $("input[name=y_direction]:checked").val();
+        var z_dir = $("input[name=z_direction]:checked").val();
+        line_annotations['has_target'] = hasTarget;
+        line_annotations['x_dir'] = x_dir;
+        line_annotations['y_dir'] = y_dir;
+        line_annotations['z_dir'] = z_dir;
+        console.log(line_annotations);
+        $("#attribute_container").hide();
+    }
+
     function Annotator(options) {
         this.annotations = [];
         this.canvas = document.getElementById('canvas');
         this.tempCanvas = document.getElementById('tempCanvas');
         this.press = 0;
+        this.box_selected = 0;
         this.ctx = canvas.getContext('2d');
         this.tempCtx = tempCanvas.getContext('2d');
         this.boxes = options.boxes;
@@ -72,7 +186,6 @@
     }
 
     Annotator.prototype.drawBoxes = function () {
-//        console.log(this.boxes.length);
         for (var i = 0; i < this.boxes.length; i++) {
             let b = this.boxes[i];
             this.ctx.strokeStyle = '#6bf442';
@@ -116,7 +229,6 @@
 
     Annotator.prototype.transferLine = function (toX, toY) {
         let distance = Math.sqrt(Math.pow(this.startX - toX, 2) + Math.pow(this.startY - toY, 2))
-//        console.log(distance);
         if (distance < 3) {
             this.drawCross(toX, toY);
         } else {
@@ -140,17 +252,46 @@
             this.endY = pos['y'];
             this.refreshLines();
             this.transferLine(this.endX, this.endY);
-            this.annotations.push({x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY});
-            //        console.log(this.annotations);
+
+            let dict_annotation = {x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY};
+            line_annotations = dict_annotation;
+            this.annotations.push(dict_annotation);
+            $("#attribute_container").show();
             return this.onchange(this.annotations);
         }
     };
 
     Annotator.prototype.canvasMouseDown = function (e) {
-        let pos = this.getCoords(e);
-        this.press = 1;
-        this.startX = pos['x'];
-        this.startY = pos['y'];
+        var pos = this.getCoords(e);
+        if (this.box_selected === 0) {
+            for (var i = 0; i < this.boxes.length; i++) {
+                let b = this.boxes[i];
+                if (pos['x'] >= b['x'] && pos['x'] <= (b['x'] + b['w']) && pos['y'] >= b['y'] && pos['y'] <= (b['y'] + b['h'])) {
+
+                    $("#attribute_container").hide();
+                    this.sel_box = b;
+                    this.tempCtx.beginPath();
+                    this.tempCtx.arc(b['x'], b['y'], 10, 0, 2 * Math.PI, false);
+                    this.tempCtx.fillStyle = '#ee42f4';
+                    this.tempCtx.fill();
+                    this.tempCtx.stroke();
+                    this.box_selected = 1;
+                }
+            }
+        }
+        else {
+            if (pos['x'] >= this.sel_box['x'] && pos['x'] <= (this.sel_box['x'] + this.sel_box['w']) && pos['y'] >= this.sel_box['y'] && pos['y'] <= (this.sel_box['y'] + this.sel_box['h'])) {
+                this.press = 1;
+                this.box_selected = 0;
+                this.startX = pos['x'];
+                this.startY = pos['y'];
+            }
+            else {
+                this.box_selected = 0;
+                $("#attribute_container").hide();
+                this.refreshLines();
+            }
+        }
     };
 
     Annotator.prototype.canvasMouseMove = function (e) {
@@ -174,7 +315,6 @@
             this.refreshLines();
             this.transferLine(this.endX, this.endY);
             this.annotations.push({x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY});
-//            console.log(this.annotations);
             this.press = 0;
             return this.onchange(this.annotations);
         }
@@ -188,6 +328,7 @@
             this.canvas.height = this.img.height;
             this.tempCanvas.width = this.img.width;
             this.tempCanvas.height = this.img.height;
+            $("#canvas_container").width(this.img.width).height(this.img.height);
             this.ctx.drawImage(this.img, 0, 0, this.img.width, this.img.height, 0, 0, this.canvas.width, this.canvas.height);
             this.drawBoxes();
 
@@ -209,20 +350,23 @@
 //        this.drawBoxes();
 //    };
 
-    Annotator.prototype.undo = function () {
-        let last_point = this.annotations.pop();
+    Annotator.prototype.resetStats = function () {
+        this.press = 0;
+        this.box_selected = 0;
+        $("#attribute_container").hide();
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.loadImage();
+    };
 
+    Annotator.prototype.undo = function () {
+        let last_point = this.annotations.pop();
+        this.resetStats();
         return this.onchange(this.annotations);
     };
 
     Annotator.prototype.clearAll = function () {
         this.annotations = [];
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-//        this.refreshLines();
-//        this.refreshImage();
-        this.loadImage();
+        this.resetStats();
         return this.onchange(this.annotations);
     };
 
@@ -232,13 +376,16 @@
     };
 
     $(document).ready(function () {
-//        debugger;
         new Annotator({
 //            url: "${image_URL}",
 //            boxes: ${bounding_box},
-            boxes: [{'y': 194, 'x': 246, 'h': 60, 'w': 60}, {'y': 224, 'x': 51, 'h': 52, 'w': 52},
-                {'y': 100, 'x': 273, 'h': 57, 'w': 57}, {'y': 188, 'x': 250, 'h': 69, 'w': 69}],
-            url: "https://s3.amazonaws.com/wpi-gaze/00005047.jpg",
+            boxes: [{'y': 165, 'x': 507, 'w': 26, 'h': 32}, {'y': 141, 'x': 412, 'w': 23, 'h': 31},
+                {'y': 177, 'x': 88, 'w': 21, 'h': 26}, {'y': 167, 'x': 325, 'w': 27, 'h': 37},
+                {'y': 166, 'x': 0, 'w': 18, 'h': 26}, {'y': 32, 'x': 212, 'w': 22, 'h': 36},
+                {'y': 160, 'x': 249, 'w': 18, 'h': 36}, {'y': 144, 'x': 585, 'w': 22, 'h': 28},
+                {'y': 143, 'x': 496, 'w': 17, 'h': 23}, {'y': 139, 'x': 566, 'w': 17, 'h': 20},
+                {'y': 109, 'x': 525, 'w': 14, 'h': 17}, {'y': 143, 'x': 295, 'w': 14, 'h': 16}],
+            url: "https://s3.amazonaws.com/wpi-classroom/video1_frame20.jpg",
             onchange: function (entries) {
                 console.log(entries);
                 $("#annotation_data").val(JSON.stringify(entries));
