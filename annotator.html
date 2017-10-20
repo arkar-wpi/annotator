@@ -43,21 +43,18 @@
             margin-right: 10px;
         }
 
-
-        /*#container, #attribute_container{*/
-            /*margin-right:10px;*/
-
-        /*}*/
-
         #canvas_container {
             position: relative;
             float:left;
+
         }
 
         #attribute_container {
             position: relative;
             float: left;
             display: none;
+            border: 1px solid black;
+            padding: 10px;
         }
 
 
@@ -71,10 +68,9 @@
 <body>
 <h1>Draw the direction of the gaze from the anywhere inside the bounding box surrounding the head</h1>
 
-<div>Click on the region inside the head bounding box and drag until the region/object/person/face&nbsp;where the
-    subject is looking by dragging the mouse. If the subject is looking out of the frame, draw the gaze direction&nbsp;until
-    the edge of the frame. If the subject is looking <b>*inwards*&nbsp;</b>or <strong>*outwards*</strong> of the
-    picture, click on the eyes (or) back of the head once and a cross will be drawn instead of a line.
+<div>Click on the region inside the head bounding box. The bounding box will be selected. Drag the mouse pointer in the direction of the gaze and this will draw the gaze line.
+    Drag until the region/object/person/face&nbsp;where the subject is looking. If the subject is looking out of the frame, click on the bounding box and then click inside the bounding box again.
+    Select the respective attributes in the window which appears after you have lifted finished drawing the gaze line or clicked inside the bounding box again to indicate that the subject is looking at something not in the picture.
 </div>
 
 
@@ -92,10 +88,10 @@
 <div class="container_annotator" id="attribute_container">
     <form name="gaze_attributes">
         <input type="checkbox" id="check_target">
-        <label for="check_target">The target is in the picture</label>
+        <label for="check_target">The person is looking at something in the picture</label>
         <br>
         <div id="gaze_xy">
-            Is the person looking <strong>Left</strong> or <strong>Right</strong>?
+            What is the horizontal direction of the person's gaze?
             <div>
                 <input type="radio" id="x_dir_left" class="no_target" name="x_direction" value="left">
                 <label for="x_dir_left">←</label>
@@ -104,7 +100,7 @@
                 <input type="radio" id="x_dir_right" class="no_target" name="x_direction" value="right">
                 <label for="x_dir_right">→</label>
             </div>
-            Is the person looking <strong>Up</strong> or <strong>Down</strong>?
+            What is the vertical direction of the person's gaze?
             <div>
                 <input type="radio" id="y_dir_up" class="no_target" name="y_direction" value="up">
                 <label for="y_dir_up">↑</label>
@@ -132,24 +128,6 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
     var line_annotations;
-
-
-//    function noTarget() {
-//      remanants of onChange from checkbox in HTML now migrated to document ready in jQuery
-//    }
-
-//    function saveAttributes() {
-//        var hasTarget = $('#check_target').val();
-//        var x_dir = $("input[name=x_direction]:checked").val();
-//        var y_dir = $("input[name=y_direction]:checked").val();
-//        var z_dir = $("input[name=z_direction]:checked").val();
-//        line_annotations['has_target'] = hasTarget;
-//        line_annotations['x_dir'] = x_dir;
-//        line_annotations['y_dir'] = y_dir;
-//        line_annotations['z_dir'] = z_dir;
-//        console.log(line_annotations);
-//        $("#attribute_container").hide();
-//    }
 
     function Annotator(options) {
         this.annotations = [];
@@ -334,8 +312,12 @@
             this.endY = pos['y'];
             this.refreshLines();
             this.transferLine(this.endX, this.endY);
-            this.annotations.push({x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY});
+
+            let dict_annotation = {x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY, bbox_dim: this.sel_box};
+            line_annotations = dict_annotation;
+            this.annotations.push(dict_annotation);
             this.press = 0;
+            $("#attribute_container").show();
             return this.onchange(this.annotations);
         }
     };
@@ -364,11 +346,6 @@
     Annotator.prototype.refreshLines = function () {
         this.tempCtx.clearRect(0, 0, this.tempCanvas.width, this.canvas.height);
     };
-
-//    Annotator.prototype.refreshImage = function () {
-//        this.ctx.drawImage(this.img, 0, 0, this.img.width, this.img.height, 0, 0, this.canvas.width, this.canvas.height);
-//        this.drawBoxes();
-//    };
 
     Annotator.prototype.resetStats = function () {
         this.press = 0;
