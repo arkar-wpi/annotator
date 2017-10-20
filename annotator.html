@@ -98,16 +98,20 @@
             Is the person looking <strong>Left</strong> or <strong>Right</strong>?
             <div>
                 <input type="radio" id="x_dir_left" class="no_target" name="x_direction" value="left">
-                <label for="x_dir_left">Left</label>
+                <label for="x_dir_left">←</label>
+                <input type="radio" id="x_dir_center" class="no_target" name="x_direction" value="center">
+                <label for="x_dir_center">center</label>
                 <input type="radio" id="x_dir_right" class="no_target" name="x_direction" value="right">
-                <label for="x_dir_right">Right</label>
+                <label for="x_dir_right">→</label>
             </div>
             Is the person looking <strong>Up</strong> or <strong>Down</strong>?
             <div>
                 <input type="radio" id="y_dir_up" class="no_target" name="y_direction" value="up">
-                <label for="y_dir_up">Up</label>
+                <label for="y_dir_up">↑</label>
+                <input type="radio" id="y_dir_center" class="no_target" name="y_direction" value="center">
+                <label for="y_dir_center">center</label>
                 <input type="radio" id="y_dir_down" class="no_target" name="y_direction" value="down">
-                <label for="y_dir_down">Down</label>
+                <label for="y_dir_down">↓</label>
             </div>
         </div>
         Is the person looking <strong>Towards</strong> the camera or <strong>Away</strong> from the camera?
@@ -259,24 +263,6 @@
         this.tempCanvas.style.cursor = 'crosshair';
     };
 
-    Annotator.prototype.canvasMouseUp = function (e) {
-        if (this.press === 1) {
-            let pos = this.getCoords(e);
-            this.press = 0;
-
-            this.endX = pos['x'];
-            this.endY = pos['y'];
-            this.refreshLines();
-            this.transferLine(this.endX, this.endY);
-
-            let dict_annotation = {x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY, bbox_dim: this.sel_box};
-            line_annotations = dict_annotation;
-            this.annotations.push(dict_annotation);
-            $("#attribute_container").show();
-            return this.onchange(this.annotations);
-        }
-    };
-
     Annotator.prototype.canvasMouseDown = function (e) {
         var pos = this.getCoords(e);
         if (this.box_selected === 0) {
@@ -318,6 +304,24 @@
 
             this.refreshLines();
             this.drawLine(this.tempCtx, this.endX, this.endY);
+        }
+    };
+
+    Annotator.prototype.canvasMouseUp = function (e) {
+        if (this.press === 1) {
+            let pos = this.getCoords(e);
+            this.press = 0;
+
+            this.endX = pos['x'];
+            this.endY = pos['y'];
+            this.refreshLines();
+            this.transferLine(this.endX, this.endY);
+
+            let dict_annotation = {x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY, bbox_dim: this.sel_box};
+            line_annotations = dict_annotation;
+            this.annotations.push(dict_annotation);
+            $("#attribute_container").show();
+            return this.onchange(this.annotations);
         }
     };
 
