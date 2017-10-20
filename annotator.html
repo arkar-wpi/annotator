@@ -91,7 +91,7 @@
 
 <div class="container_annotator" id="attribute_container">
     <form name="gaze_attributes">
-        <input type="checkbox" id="check_target" onChange="noTarget()">
+        <input type="checkbox" id="check_target">
         <label for="check_target">The target is in the picture</label>
         <br>
         <div id="gaze_xy">
@@ -118,7 +118,7 @@
             <label for="z_dir_away">Away</label>
         </div>
         <div>
-            <button type="button" id="btn_save" onclick="saveAttributes()">Save</button>
+            <button type="button" id="btn_save">Save</button>
         </div>
     </form>
 </div>
@@ -129,33 +129,23 @@
 <script>
     var line_annotations;
 
-    function noTarget() {
-        var elements = document.getElementsByClassName("no_target");
-        var el = document.getElementById("check_target");
 
-        for (var i = 0; i < elements.length; i++) {
-            if (el.checked) {
-                elements[i].disabled = true;
+//    function noTarget() {
+//      remanants of onChange from checkbox in HTML now migrated to document ready in jQuery
+//    }
 
-            } else {
-                elements[i].disabled = false;
-
-            }
-        }
-    }
-
-    function saveAttributes() {
-        var hasTarget = $('#check_target').val();
-        var x_dir = $("input[name=x_direction]:checked").val();
-        var y_dir = $("input[name=y_direction]:checked").val();
-        var z_dir = $("input[name=z_direction]:checked").val();
-        line_annotations['has_target'] = hasTarget;
-        line_annotations['x_dir'] = x_dir;
-        line_annotations['y_dir'] = y_dir;
-        line_annotations['z_dir'] = z_dir;
-        console.log(line_annotations);
-        $("#attribute_container").hide();
-    }
+//    function saveAttributes() {
+//        var hasTarget = $('#check_target').val();
+//        var x_dir = $("input[name=x_direction]:checked").val();
+//        var y_dir = $("input[name=y_direction]:checked").val();
+//        var z_dir = $("input[name=z_direction]:checked").val();
+//        line_annotations['has_target'] = hasTarget;
+//        line_annotations['x_dir'] = x_dir;
+//        line_annotations['y_dir'] = y_dir;
+//        line_annotations['z_dir'] = z_dir;
+//        console.log(line_annotations);
+//        $("#attribute_container").hide();
+//    }
 
     function Annotator(options) {
         this.annotations = [];
@@ -230,21 +220,24 @@
     Annotator.prototype.transferLine = function (toX, toY) {
         let distance = Math.sqrt(Math.pow(this.startX - toX, 2) + Math.pow(this.startY - toY, 2))
         if (distance < 3) {
-            this.setCheckboxes(true);
+            this.setCheckboxes(outFrame=true);
             this.drawCross(toX, toY);
         } else {
             this.endX = toX;
             this.endY = toY;
-            this.setCheckboxes(false);
+            this.setCheckboxes(outFrame=false);
             this.drawLine(this.ctx, toX, toY);
         }
     };
 
     Annotator.prototype.setCheckboxes = function(outFrame) {
+
         if (outFrame){
-            $('#check_target').attr('checked', false);
+            $('#check_target').removeAttr('checked');
+            $('#check_target').trigger('change')
         } else {
-            $('#check_target').attr('checked', true);
+            $('#check_target').attr('checked', 'checked');
+            $('#check_target').trigger('change');
             if (this.endX > this.startX) {
                 $("#x_dir_right").attr('checked', 'checked');
             } else {
@@ -272,7 +265,7 @@
             this.refreshLines();
             this.transferLine(this.endX, this.endY);
 
-            let dict_annotation = {x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY};
+            let dict_annotation = {x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY, bbox_dim: this.sel_box};
             line_annotations = dict_annotation;
             this.annotations.push(dict_annotation);
             $("#attribute_container").show();
@@ -428,6 +421,36 @@
             $("#submitButton").val("This is preview");
         }
 //        console.log(assignment_id);
+
+        $("#check_target").change(function (){
+            var elements = document.getElementsByClassName("no_target");
+            var el = document.getElementById("check_target");
+
+            for (var i = 0; i < elements.length; i++) {
+                if (el.checked) {
+                    elements[i].disabled = true;
+
+                } else {
+                    elements[i].disabled = false;
+
+                }
+            }
+        });
+
+        $("#btn_save").click(function () {
+            var hasTarget = $('#check_target').val();
+            var x_dir = $("input[name=x_direction]:checked").val();
+            var y_dir = $("input[name=y_direction]:checked").val();
+            var z_dir = $("input[name=z_direction]:checked").val();
+            line_annotations['has_target'] = hasTarget;
+            line_annotations['x_dir'] = x_dir;
+            line_annotations['y_dir'] = y_dir;
+            line_annotations['z_dir'] = z_dir;
+//            console.log(line_annotations);
+            $("#attribute_container").hide();
+            }
+        );
+
     });
 </script>
 </body>
