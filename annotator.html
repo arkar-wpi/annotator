@@ -166,11 +166,15 @@
         this.undoButton = document.getElementById("undo");
         this.undoButton.addEventListener('click', this.undo.bind(this));
 
+        this.saveButton = document.getElementById("btn_save");
+        this.saveButton.addEventListener('click', this.save.bind(this));
+
         this.tempCanvas.addEventListener('mousedown', this.canvasMouseDown.bind(this));
         this.tempCanvas.addEventListener('mouseup', this.canvasMouseUp.bind(this));
         this.tempCanvas.addEventListener('mousemove', this.canvasMouseMove.bind(this));
         this.tempCanvas.addEventListener('mouseenter', this.canvasMouseEnter.bind(this));
         this.tempCanvas.addEventListener('mouseout', this.canvasMouseOut.bind(this));
+
         this.onchange = options.onchange
 
     }
@@ -382,6 +386,20 @@
         return this.onchange(this.annotations);
     };
 
+    Annotator.prototype.save = function() {
+        var hasTarget = $('#check_target').val();
+        var x_dir = $("input[name=x_direction]:checked").val();
+        var y_dir = $("input[name=y_direction]:checked").val();
+        var z_dir = $("input[name=z_direction]:checked").val();
+        line_annotations['has_target'] = hasTarget;
+        line_annotations['x_dir'] = x_dir;
+        line_annotations['y_dir'] = y_dir;
+        line_annotations['z_dir'] = z_dir;
+        console.log(line_annotations);
+        $("#attribute_container").hide();
+        return this.onchange(this.annotations);
+    };
+
     Annotator.prototype.getCoords = function (e) {
         let r = canvas.getBoundingClientRect();
         return {x: e.clientX - r.left, y: e.clientY - r.top}
@@ -437,19 +455,6 @@
             }
         });
 
-        $("#btn_save").click(function () {
-            var hasTarget = $('#check_target').val();
-            var x_dir = $("input[name=x_direction]:checked").val();
-            var y_dir = $("input[name=y_direction]:checked").val();
-            var z_dir = $("input[name=z_direction]:checked").val();
-            line_annotations['has_target'] = hasTarget;
-            line_annotations['x_dir'] = x_dir;
-            line_annotations['y_dir'] = y_dir;
-            line_annotations['z_dir'] = z_dir;
-//            console.log(line_annotations);
-            $("#attribute_container").hide();
-            }
-        );
 
     });
 </script>
