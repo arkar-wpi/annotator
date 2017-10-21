@@ -13,6 +13,15 @@
             line-height: 32px;
         }
 
+        input[type=submit] {
+            color: white;
+            background-color: #ff3a26;
+            padding: 5px 10px;
+            border-radius: 0;
+            border: 0;
+            font-size: 14px;
+        }
+
         button,
         legend {
             color: white;
@@ -21,6 +30,11 @@
             border-radius: 0;
             border: 0;
             font-size: 14px;
+        }
+
+        input[type=submit]:hover,
+        input[type=submit]:focus {
+            color: #0a0a0a;
         }
 
         button:hover,
@@ -151,6 +165,10 @@
         this.saveButton = document.getElementById("btn_save");
         this.saveButton.addEventListener('click', this.save.bind(this));
 
+        this.noTargetElements = document.getElementsByClassName("no_target");
+        this.targetCheckbox = document.getElementById("check_target");
+        this.targetCheckbox.addEventListener('change', this.checkBox.bind(this));
+
         this.tempCanvas.addEventListener('mousedown', this.canvasMouseDown.bind(this));
         this.tempCanvas.addEventListener('mouseup', this.canvasMouseUp.bind(this));
         this.tempCanvas.addEventListener('mousemove', this.canvasMouseMove.bind(this));
@@ -216,25 +234,38 @@
         }
     };
 
-    Annotator.prototype.setCheckboxes = function(outFrame) {
+    Annotator.prototype.checkBox = function() {
+        for (var i = 0; i < this.noTargetElements.length; i++) {
+            if (this.targetCheckbox.checked) {
+                this.noTargetElements[i].disabled = true;
 
+            } else {
+                this.noTargetElements[i].disabled = false;
+            }
+        }
+    };
+
+    Annotator.prototype.setCheckboxes = function(outFrame) {
+        console.log(this.startX, this.startY, this.endX, this.endY);
+        console.log(outFrame);
         if (outFrame){
-            $('#check_target').removeAttr('checked');
-            $('#check_target').trigger('change')
+//            $('#check_target').removeAttr('checked');
+//            this.checkBox();
         } else {
             $('#check_target').attr('checked', 'checked');
-            $('#check_target').trigger('change');
-            if (this.endX > this.startX) {
+            if (this.endX >= this.startX) {
                 $("#x_dir_right").attr('checked', 'checked');
             } else {
                 $("#x_dir_left").attr('checked', 'checked');
             }
-            if (this.endY < this.startY) {
+            if (this.endY <= this.startY) {
                 $("#y_dir_up").attr('checked', 'checked');
             } else {
                 $("#y_dir_down").attr('checked', 'checked');
             }
+            this.checkBox();
         }
+
     };
 
     Annotator.prototype.canvasMouseEnter = function (e) {
@@ -413,30 +444,12 @@
 
 //        var assignment_id = turkGetParam('assignmentId', "");
         var assignment_id = "";
-        // Disable the submission at the beginning.
         $('#submitButton').attr("disabled", "disabled");
         $("#submitButton").detach().appendTo("#button_paragraph");
         if (assignment_id === "ASSIGNMENT_ID_NOT_AVAILABLE") {
             $("#submitButton").val("This is preview");
         }
 //        console.log(assignment_id);
-
-        $("#check_target").change(function (){
-            var elements = document.getElementsByClassName("no_target");
-            var el = document.getElementById("check_target");
-
-            for (var i = 0; i < elements.length; i++) {
-                if (el.checked) {
-                    elements[i].disabled = true;
-
-                } else {
-                    elements[i].disabled = false;
-
-                }
-            }
-        });
-
-
     });
 </script>
 </body>
