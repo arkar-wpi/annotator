@@ -71,7 +71,6 @@
             padding: 10px;
         }
 
-
         #canvas, #tempCanvas {
             position: absolute;
             top: 0;
@@ -261,10 +260,16 @@
                     $("#attribute_container").hide();
                     this.sel_box = b;
                     this.tempCtx.beginPath();
-                    this.tempCtx.arc(b['x'], b['y'], 10, 0, 2 * Math.PI, false);
-                    this.tempCtx.fillStyle = '#ee42f4';
-                    this.tempCtx.fill();
+                    // this.tempCtx.arc(b['x'], b['y'], 10, 0, 2 * Math.PI, false);
+                    // this.tempCtx.fillStyle = '#ee42f4';
+                    // this.tempCtx.fill();
+                    // this.tempCtx.stroke();
+
+                    this.tempCtx.strokeStyle = 'red';
+                    this.tempCtx.lineWidth = 2;
+                    this.tempCtx.rect(b['x'],b['y'],b['w'],b['h']);
                     this.tempCtx.stroke();
+
                     this.box_selected = 1;
                 }
             }
