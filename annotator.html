@@ -180,6 +180,7 @@
         this.url = options.url;
 
         this.scaledBonudingBoxes = false;
+        this.scaleFactor = 1;
 
         this.loadImage();
 
@@ -209,10 +210,10 @@
             for (var i = 0; i < this.boxes.length; i++) {
                 let b = this.boxes[i];
                 this.boxes[i] = {
-                    'x': b['x'] / 2,
-                    'y': b['y'] / 2,
-                    'w': b['w'] / 2,
-                    'h': b['h'] / 2
+                    'x': b['x'] * this.scaleFactor,
+                    'y': b['y'] * this.scaleFactor,
+                    'w': b['w'] * this.scaleFactor,
+                    'h': b['h'] * this.scaleFactor
                 };
             }
             this.scaledBonudingBoxes = true;
@@ -369,8 +370,9 @@
             let width = this.img.width;
             let height = this.img.height;
             if (this.img.width > 640) {
-                width = width/2;
-                height = height/2;
+                this.scaleFactor = 640/width;
+                width = width * this.scaleFactor;
+                height = height * this.scaleFactor;
                 this.scaleBoundingBoxes();
             }
             this.canvas.width = width;
@@ -431,6 +433,8 @@
 //        line_annotations['x_dir'] = x_dir;
 //        line_annotations['y_dir'] = y_dir;
         line_annotations['z_dir'] = z_dir;
+        line_annotations['scaled'] = this.scaledBonudingBoxes;
+        line_annotations['scale_factor'] = this.scaleFactor;
         console.log(line_annotations);
         $("#attribute_container").hide();
         this.clearBoxes();
