@@ -243,7 +243,6 @@
 
     Annotator.prototype.clearBoxes = function() {
         $("[type=radio]").removeAttr("checked");
-        $("[type=radio]").removeAttr("checked");
     };
 
     Annotator.prototype.canvasMouseEnter = function (e) {
@@ -393,8 +392,6 @@
 
     Annotator.prototype.save = function() {
         var in_out_frame = $("input[name=in_out_frame]:checked").val();
-        var x_dir = $("input[name=x_direction]:checked").val();
-        var y_dir = $("input[name=y_direction]:checked").val();
         var z_dir = $("input[name=z_direction]:checked").val();
         if (in_out_frame === undefined || z_dir === undefined) {
             return alert("Please complete all selections");
