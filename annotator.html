@@ -179,7 +179,7 @@
         this.boxes = options.boxes;
         this.url = options.url;
 
-        this.mustScale = false;
+        this.scaledBonudingBoxes = false;
 
         this.loadImage();
 
@@ -205,14 +205,17 @@
     }
 
     Annotator.prototype.scaleBoundingBoxes = function() {
-        debugger;
-        for (var i = 0; i < this.boxes.length; i++) {
-            let b = this.boxes[i];
-            this.boxes[i] = {'x': b['x']/2,
-                'y': b['y']/2,
-                'w': b['w']/2,
-                'h': b['h']/2
-            };
+        if (!this.scaledBonudingBoxes) {
+            for (var i = 0; i < this.boxes.length; i++) {
+                let b = this.boxes[i];
+                this.boxes[i] = {
+                    'x': b['x'] / 2,
+                    'y': b['y'] / 2,
+                    'w': b['w'] / 2,
+                    'h': b['h'] / 2
+                };
+            }
+            this.scaledBonudingBoxes = true;
         }
     };
 
@@ -366,7 +369,6 @@
             let width = this.img.width;
             let height = this.img.height;
             if (this.img.width > 640) {
-                this.mustScale = true;
                 width = width/2;
                 height = height/2;
                 this.scaleBoundingBoxes();
