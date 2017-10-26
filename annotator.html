@@ -111,36 +111,36 @@
             <label for="out_frame">Outside</label>
         </div>
 
-        <div id="gaze_xy">
-            What is the <strong>horizontal</strong> direction of the person's gaze?
-            <div>
-                <input type="radio" id="x_dir_left" class="no_target" name="x_direction" value="left">
-                <label for="x_dir_left">←</label>
+        <!--<div id="gaze_xy">-->
+            <!--What is the <strong>horizontal</strong> direction of the person's gaze?-->
+            <!--<div>-->
+                <!--<input type="radio" id="x_dir_left" class="no_target" name="x_direction" value="left">-->
+                <!--<label for="x_dir_left">←</label>-->
 
-                <input type="radio" id="x_dir_center" class="no_target" name="x_direction" value="center">
-                <label for="x_dir_center">Center</label>
+                <!--<input type="radio" id="x_dir_center" class="no_target" name="x_direction" value="center">-->
+                <!--<label for="x_dir_center">Center</label>-->
 
-                <input type="radio" id="x_dir_right" class="no_target" name="x_direction" value="right">
-                <label for="x_dir_right">→</label>
+                <!--<input type="radio" id="x_dir_right" class="no_target" name="x_direction" value="right">-->
+                <!--<label for="x_dir_right">→</label>-->
 
-                <input type="radio" id="x_dir_unclear" class="no_target" name="x_direction" value="unclear">
-                <label for="x_dir_unclear">Unclear</label>
-            </div>
-            What is the <strong>vertical </strong> direction of the person's gaze?
-            <div>
-                <input type="radio" id="y_dir_up" class="no_target" name="y_direction" value="up">
-                <label for="y_dir_up">↑</label>
+                <!--<input type="radio" id="x_dir_unclear" class="no_target" name="x_direction" value="unclear">-->
+                <!--<label for="x_dir_unclear">Unclear</label>-->
+            <!--</div>-->
+            <!--What is the <strong>vertical </strong> direction of the person's gaze?-->
+            <!--<div>-->
+                <!--<input type="radio" id="y_dir_up" class="no_target" name="y_direction" value="up">-->
+                <!--<label for="y_dir_up">↑</label>-->
 
-                <input type="radio" id="y_dir_center" class="no_target" name="y_direction" value="center">
-                <label for="y_dir_center">Center</label>
+                <!--<input type="radio" id="y_dir_center" class="no_target" name="y_direction" value="center">-->
+                <!--<label for="y_dir_center">Center</label>-->
 
-                <input type="radio" id="y_dir_down" class="no_target" name="y_direction" value="down">
-                <label for="y_dir_down">↓</label>
+                <!--<input type="radio" id="y_dir_down" class="no_target" name="y_direction" value="down">-->
+                <!--<label for="y_dir_down">↓</label>-->
 
-                <input type="radio" id="y_dir_unclear" class="no_target" name="y_direction" value="unclear">
-                <label for="y_dir_unclear">Unclear</label>
-            </div>
-        </div>
+                <!--<input type="radio" id="y_dir_unclear" class="no_target" name="y_direction" value="unclear">-->
+                <!--<label for="y_dir_unclear">Unclear</label>-->
+            <!--</div>-->
+        <!--</div>-->
 
         Is the person looking <strong>Towards</strong> the camera or <strong>Away</strong> from the camera?
         <div id="gaze_z">
@@ -179,6 +179,8 @@
         this.boxes = options.boxes;
         this.url = options.url;
 
+        this.mustScale = false;
+
         this.loadImage();
 
         this.clearAllButton = document.getElementById("clear_all");
@@ -201,6 +203,18 @@
         this.onchange = options.onchange
 
     }
+
+    Annotator.prototype.scaleBoundingBoxes = function() {
+        debugger;
+        for (var i = 0; i < this.boxes.length; i++) {
+            let b = this.boxes[i];
+            this.boxes[i] = {'x': b['x']/2,
+                'y': b['y']/2,
+                'w': b['w']/2,
+                'h': b['h']/2
+            };
+        }
+    };
 
     Annotator.prototype.drawBoxes = function () {
         for (var i = 0; i < this.boxes.length; i++) {
@@ -349,11 +363,20 @@
         this.img = new Image();
         this.img.src = this.url;
         this.img.onload = function () {
-            this.canvas.width = this.img.width;
-            this.canvas.height = this.img.height;
-            this.tempCanvas.width = this.img.width;
-            this.tempCanvas.height = this.img.height;
-            $("#canvas_container").width(this.img.width).height(this.img.height);
+            let width = this.img.width;
+            let height = this.img.height;
+            if (this.img.width > 640) {
+                this.mustScale = true;
+                width = width/2;
+                height = height/2;
+                this.scaleBoundingBoxes();
+            }
+            this.canvas.width = width;
+            this.canvas.height = height;
+            this.tempCanvas.width = width;
+            this.tempCanvas.height = height;
+
+            $("#canvas_container").width(width).height(height);
             this.ctx.drawImage(this.img, 0, 0, this.img.width, this.img.height, 0, 0, this.canvas.width, this.canvas.height);
             this.drawBoxes();
 
@@ -396,12 +419,15 @@
         var x_dir = $("input[name=x_direction]:checked").val();
         var y_dir = $("input[name=y_direction]:checked").val();
         var z_dir = $("input[name=z_direction]:checked").val();
-        if (x_dir === undefined || y_dir === undefined || z_dir === undefined) {
+//        if (x_dir === undefined || y_dir === undefined || z_dir === undefined) {
+//            return alert("Please complete all selections");
+//        }
+        if (in_out_frame === undefined || z_dir === undefined) {
             return alert("Please complete all selections");
         }
         line_annotations['in_out_frame'] = in_out_frame;
-        line_annotations['x_dir'] = x_dir;
-        line_annotations['y_dir'] = y_dir;
+//        line_annotations['x_dir'] = x_dir;
+//        line_annotations['y_dir'] = y_dir;
         line_annotations['z_dir'] = z_dir;
         console.log(line_annotations);
         $("#attribute_container").hide();
@@ -418,13 +444,18 @@
         new Annotator({
 //            url: "${image_URL}",
 //            boxes: ${bounding_box},
-            boxes: [{'y': 165, 'x': 507, 'w': 26, 'h': 32}, {'y': 141, 'x': 412, 'w': 23, 'h': 31},
-                {'y': 177, 'x': 88, 'w': 21, 'h': 26}, {'y': 167, 'x': 325, 'w': 27, 'h': 37},
-                {'y': 166, 'x': 0, 'w': 18, 'h': 26}, {'y': 32, 'x': 212, 'w': 22, 'h': 36},
-                {'y': 160, 'x': 249, 'w': 18, 'h': 36}, {'y': 144, 'x': 585, 'w': 22, 'h': 28},
-                {'y': 143, 'x': 496, 'w': 17, 'h': 23}, {'y': 139, 'x': 566, 'w': 17, 'h': 20},
-                {'y': 109, 'x': 525, 'w': 14, 'h': 17}, {'y': 143, 'x': 295, 'w': 14, 'h': 16}],
-            url: "https://s3.amazonaws.com/wpi-classroom/video1_frame20.jpg",
+//            boxes: [{'y': 165, 'x': 507, 'w': 26, 'h': 32}, {'y': 141, 'x': 412, 'w': 23, 'h': 31},
+//                {'y': 177, 'x': 88, 'w': 21, 'h': 26}, {'y': 167, 'x': 325, 'w': 27, 'h': 37},
+//                {'y': 166, 'x': 0, 'w': 18, 'h': 26}, {'y': 32, 'x': 212, 'w': 22, 'h': 36},
+//                {'y': 160, 'x': 249, 'w': 18, 'h': 36}, {'y': 144, 'x': 585, 'w': 22, 'h': 28},
+//                {'y': 143, 'x': 496, 'w': 17, 'h': 23}, {'y': 139, 'x': 566, 'w': 17, 'h': 20},
+//                {'y': 109, 'x': 525, 'w': 14, 'h': 17}, {'y': 143, 'x': 295, 'w': 14, 'h': 16}],
+            boxes: [{'y': 231, 'x': 754, 'w': 33, 'h': 41}, {'y': 368, 'x': 378, 'w': 40, 'h': 47},
+                {'y': 75, 'x': 1157, 'w': 39, 'h': 58}, {'y': 331, 'x': 128, 'w': 46, 'h': 66},
+                {'y': 264, 'x': 176, 'w': 35, 'h': 45}, {'y': 339, 'x': 270, 'w': 29, 'h': 40},
+                {'y': 261, 'x': 643, 'w': 33, 'h': 42}, {'y': 313, 'x': 52, 'w': 33, 'h': 47}],
+//            url: "https://s3.amazonaws.com/wpi-classroom/video1_frame20.jpg",
+            url: "https://s3.amazonaws.com/wpi-classroom/video2_frame78.jpg",
             onchange: function (entries) {
                 console.log(entries);
                 $("#annotation_data").val(JSON.stringify(entries));
