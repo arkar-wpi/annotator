@@ -250,6 +250,11 @@
     };
 
     Annotator.prototype.canvasMouseDown = function (e) {
+
+        while ($("#attribute_container").is(":visible")) { //form validation
+          return alert("Please complete all selections");
+        }
+
         var pos = this.getCoords(e);
         if (this.box_selected === 0) {
             for (var i = 0; i < this.boxes.length; i++) {
@@ -259,6 +264,7 @@
                     $("#attribute_container").hide();
                     this.sel_box = b;
                     this.tempCtx.beginPath();
+                    // The purple dot implementation
                     // this.tempCtx.arc(b['x'], b['y'], 10, 0, 2 * Math.PI, false);
                     // this.tempCtx.fillStyle = '#ee42f4';
                     // this.tempCtx.fill();
@@ -300,6 +306,7 @@
     };
 
     Annotator.prototype.canvasMouseUp = function (e) {
+
         if (this.press === 1) {
             let pos = this.getCoords(e);
             this.press = 0;
