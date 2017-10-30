@@ -103,7 +103,7 @@
     As an example:
     <br>
     <video width="320" height="100" controls>
-        <source src="https://s3.amazonaws.com/example-tutorial/example_tutorial.mp4" type="video/mp4">
+        <source src="https://s3.amazonaws.com/example-tutorial/example_tutorial2.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
 
@@ -435,11 +435,10 @@
         new Annotator({
 //            url: "${image_URL}",
 //            boxes: ${bounding_box},
-            boxes: [{'y': 231, 'x': 754, 'w': 33, 'h': 41}, {'y': 368, 'x': 378, 'w': 40, 'h': 47},
-                {'y': 75, 'x': 1157, 'w': 39, 'h': 58}, {'y': 331, 'x': 128, 'w': 46, 'h': 66},
-                {'y': 264, 'x': 176, 'w': 35, 'h': 45}, {'y': 339, 'x': 270, 'w': 29, 'h': 40},
-                {'y': 261, 'x': 643, 'w': 33, 'h': 42}, {'y': 313, 'x': 52, 'w': 33, 'h': 47}],
-            url: "https://s3.amazonaws.com/wpi-classroom/video2_frame78.jpg",
+            boxes: [{'y': 346, 'x': 939, 'w': 93, 'h': 140}, {'y': 139, 'x': 35, 'w': 81, 'h': 114},
+                {'y': 363, 'x': 511, 'w': 93, 'h': 124}, {'y': 107, 'x': 569, 'w': 75, 'h': 101},
+                {'y': 129, 'x': 1012, 'w': 65, 'h': 123}, {'y': 167, 'x': 300, 'w': 70, 'h': 99}],
+            url: "https://s3.amazonaws.com/wpi-classroom/video4_frame164.jpg",
             onchange: function (entries) {
                 console.log(entries);
                 $("#annotation_data").val(JSON.stringify(entries));
