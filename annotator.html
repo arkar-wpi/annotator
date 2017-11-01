@@ -83,7 +83,7 @@
 
 <div>
     <h3>Instructions</h3>
-    <strong>Step 1</strong> Click on one of the faces that has a green box around it. The bounding box will be selected (as indicated by the red box).<br>
+    <strong>Step 1</strong> Click on one of the faces that has a blue box around it. The bounding box will be selected (as indicated by the red box).<br>
     <strong>Step 2</strong> Decide visually whether the person is looking at an object/image shown somewhere inside the image or outside the image.
     <ul>
         <li>If the person's gaze target is shown INSIDE the image: Click on the bounding box (again) and drag the mouse pointer in the direction of the person's eye-gaze -- this will draw the gaze line. Drag until you reach the specific object/person that the person is looking at, then release.</li>
@@ -102,7 +102,7 @@
     <br>
     As an example:
     <br>
-    <video width="320" height="100" controls>
+    <video width="800" height="300" controls>
         <source src="https://s3.amazonaws.com/example-tutorial/example_tutorial2.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
@@ -211,8 +211,8 @@
     Annotator.prototype.drawBoxes = function () {
         for (var i = 0; i < this.boxes.length; i++) {
             let b = this.boxes[i];
-            this.ctx.strokeStyle = '#6bf442';
-            this.ctx.lineWidth = 1;
+            this.ctx.strokeStyle = '#4ca2f4';
+            this.ctx.lineWidth = 2;
             this.ctx.rect(b['x'],b['y'],b['w'],b['h']);
             this.ctx.stroke();
         }
@@ -291,7 +291,7 @@
                     // this.tempCtx.stroke();
 
                     this.tempCtx.strokeStyle = 'red';
-                    this.tempCtx.lineWidth = 2;
+                    this.tempCtx.lineWidth = 3;
                     this.tempCtx.rect(b['x'],b['y'],b['w'],b['h']);
                     this.tempCtx.stroke();
 
@@ -465,7 +465,7 @@
         $('#submitButton').attr("disabled", "disabled");
         $("#submitButton").detach().appendTo("#button_paragraph");
         if (assignment_id === "ASSIGNMENT_ID_NOT_AVAILABLE") {
-            $("#submitButton").val("This is preview");
+            $("#submitButton").val("This is in preview mode");
         }
 //        console.log(assignment_id);
     });
