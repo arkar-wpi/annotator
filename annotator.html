@@ -84,12 +84,15 @@
 <div>
     <h3>Instructions</h3>
     <strong>Step 1</strong> Click on one of the faces that has a blue box around it. The bounding box will be selected (as indicated by the red box).<br>
-    <strong>Step 2</strong> Decide visually whether the person is looking at an object/image shown somewhere inside the image or outside the image.
     <ul>
-        <li>If the person's gaze target is shown INSIDE the image: Click on the bounding box (again) and drag the mouse pointer in the direction of the person's eye-gaze -- this will draw the gaze line. Drag until you reach the specific object/person that the person is looking at, then release.</li>
+        <li>If the box is incorrectly placed around non-head objects, ignore that box.</li>
+    </ul>
+    <strong>Step 2</strong> Decide visually whether the person is looking at an object/person shown somewhere inside the image or outside the image.
+    <ul>
+        <li>If the person's gaze target is shown INSIDE the image: Click and drag the mouse pointer from inside of the bounding box to the direction of the person's eye-gaze -- this will draw the gaze line. Drag until you reach the specific object/person that the person is looking at, then release.</li>
         <li>If the person's gaze target is shown OUTSIDE the image: Click on the bounding box (again) so that an "X" appears.</li>
     </ul>
-    <strong>Step 3</strong> Next, look at the set of questions shown in the window below the image. Select the appropriate answers.<br>
+    <strong>Step 3</strong> Next, look at the set of questions which will appear on the side of the image. Select the appropriate answers.<br>
     <ul>
         <li>If the person is looking at something in the picture, choose "Inside" for the first question. Otherwise, choose "Outside".</li>
         <li>Imagine the camera used to take this picture is placed where you are sitting now.</li>
@@ -97,13 +100,14 @@
             <li>If the person is looking at something towards the camera, choose "Towards" for the second question. If the person is looking at something away from the camera, choose "Away". If you are unsure whether the person is looking towards or away from the camera, choose "Unclear".</li>
         </ul>
     </ul>
-    <strong>Step 4</strong> Repeat this process for all faces in the image
+    <strong>Step 4</strong> Repeat this process for all faces in the image.
+    <strong>Step 5</strong> Click "Submit" when gazes of all faces have been drawn.
     <br>
     <br>
     As an example:
     <br>
     <video width="800" height="300" controls>
-        <source src="https://s3.amazonaws.com/example-tutorial/example_tutorial2.mp4" type="video/mp4">
+        <source src="https://s3.amazonaws.com/example-tutorial/example_undergrads.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
 
@@ -442,10 +446,12 @@
         new Annotator({
 //            url: "${image_URL}",
 //            boxes: ${bounding_box},
-            boxes: [{'y': 346, 'x': 939, 'w': 93, 'h': 140}, {'y': 139, 'x': 35, 'w': 81, 'h': 114},
-                {'y': 363, 'x': 511, 'w': 93, 'h': 124}, {'y': 107, 'x': 569, 'w': 75, 'h': 101},
-                {'y': 129, 'x': 1012, 'w': 65, 'h': 123}, {'y': 167, 'x': 300, 'w': 70, 'h': 99}],
-            url: "https://s3.amazonaws.com/wpi-classroom/video4_frame164.jpg",
+            boxes: [{'y': 160, 'x': 526, 'w': 37, 'h': 53}, {'y': 197, 'x': 313, 'w': 26, 'h': 33},
+                {'y': 140, 'x': 310, 'w': 20, 'h': 26}, {'y': 156, 'x': 144, 'w': 28, 'h': 27},
+                {'y': 161, 'x': 83, 'w': 22, 'h': 27}, {'y': 146, 'x': 496, 'w': 22, 'h': 31},
+                {'y': 133, 'x': 379, 'w': 22, 'h': 26}],
+            url: "https://s3.amazonaws.com/wpi-classroom/video3_frame15.jpg",
+
             onchange: function (entries) {
                 console.log(entries);
                 $("#annotation_data").val(JSON.stringify(entries));
