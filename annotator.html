@@ -97,16 +97,24 @@
         <li>If the person is looking at something in the picture, choose "Inside" for the first question. Otherwise, choose "Outside".</li>
         <li>Imagine the camera used to take this picture is placed where you are sitting now.</li>
         <ul>
-            <li>If the person is looking at something towards the camera, choose "Towards" for the second question. If the person is looking at something away from the camera, choose "Away". If you are unsure whether the person is looking towards or away from the camera, choose "Unclear".</li>
+            <li>If the person is looking at something towards the direction of where the camera is located, choose "Towards" for the second question. If the person is looking at something away from the camera, choose "Away". If you are unsure whether the person is looking towards or away from the camera, choose "Unclear". For clarity, check out the pictorial representations of this concept.</li>
         </ul>
     </ul>
     <strong>Step 4</strong> Repeat this process for all faces in the image.
     <strong>Step 5</strong> Click "Submit" when gazes of all faces have been drawn.
     <br>
     <br>
-    As an example:
+    <h3>Pictorial example of people looking towards and looking away from the direction of the camera:</h3>
     <br>
-    <video width="800" height="300" controls>
+    <img src="https://s3.amazonaws.com/example-tutorial/svg_looking_towards.svg" alt="Example of looking towards" style="width:500px;height:500px;">
+    <img src="https://s3.amazonaws.com/example-tutorial/svg_looking_away.svg" alt="Example of looking away" style="width:500px;height:500px;">
+    <br>
+    Choose <strong>towards</strong> if the person is looking towards the direction of where the camera is located, even though that person is not looking directly into the camera. As shown in the pictures above, if a person is looking in the white region (whether looking up or down), the person is looking <strong>towards</strong> the camera and if a person is looking in the brown region (whether looking up or down), the person is looking <strong>away</strong> from the camera.
+    <br>
+    <br>
+    <h3>Example annotation process video:</h3>
+    <br>
+    <video width="1200" height="500" controls>
         <source src="https://s3.amazonaws.com/example-tutorial/example_undergrads.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
@@ -164,6 +172,7 @@
         this.annotations = [];
         this.canvas = document.getElementById('canvas');
         this.tempCanvas = document.getElementById('tempCanvas');
+        this.width_limit = 1000;
         this.press = 0;
         this.box_selected = 0;
         this.ctx = canvas.getContext('2d');
@@ -373,8 +382,8 @@
         this.img.onload = function () {
             let width = this.img.width;
             let height = this.img.height;
-            if (this.img.width > 640) {
-                this.scaleFactor = 640/width;
+            if (this.img.width > this.width_limit) {
+                this.scaleFactor = this.width_limit/width;
                 width = width * this.scaleFactor;
                 height = height * this.scaleFactor;
                 this.scaleBoundingBoxes();
@@ -446,11 +455,12 @@
         new Annotator({
 //            url: "${image_URL}",
 //            boxes: ${bounding_box},
-            boxes: [{'y': 160, 'x': 526, 'w': 37, 'h': 53}, {'y': 197, 'x': 313, 'w': 26, 'h': 33},
-                {'y': 140, 'x': 310, 'w': 20, 'h': 26}, {'y': 156, 'x': 144, 'w': 28, 'h': 27},
-                {'y': 161, 'x': 83, 'w': 22, 'h': 27}, {'y': 146, 'x': 496, 'w': 22, 'h': 31},
-                {'y': 133, 'x': 379, 'w': 22, 'h': 26}],
-            url: "https://s3.amazonaws.com/wpi-classroom/video3_frame15.jpg",
+
+            boxes: [{'y': 157, 'x': 323, 'w': 17, 'h': 24},
+                {'y': 245, 'x': 647, 'w': 27, 'h': 35},
+                {'y': 219, 'x': 487, 'w': 14, 'h': 19},
+                {'y': 218, 'x': 575, 'w': 15, 'h': 21}],
+            url: "https://s3.amazonaws.com/wpi-classroom/video9_frame562.jpg",
 
             onchange: function (entries) {
                 console.log(entries);
