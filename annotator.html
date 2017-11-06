@@ -96,13 +96,17 @@
     <ul>
         <li>If the person is looking at something in the picture, choose "Inside". If the person is looking at something that is not in the picture, choose "Outside".</li>
     </ul>
+    <br>
+    <h3>Example gaze directions (both inside and outside):</h3>
+    <img src="https://s3.amazonaws.com/example-tutorial/example_image.jpg" alt="Example of gaze directions" style="width:500px;height:400px;">
+    <br>
     <strong>Step 4</strong> Repeat this process for all faces in the image.<br>
     <strong>Step 5</strong> Click "Submit" when gazes of all faces have been drawn.
     <br>
     <h3>Example annotation process video:</h3>
     <br>
     <video width="1200" height="500" controls>
-        <source src="https://s3.amazonaws.com/example-tutorial/example_undergrads.mp4" type="video/mp4">
+        <source src="https://s3.amazonaws.com/example-tutorial/example_without_zdir.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
 
@@ -412,7 +416,6 @@
             return alert("Please complete all selections");
         }
         line_annotations['in_out_frame'] = in_out_frame;
-        line_annotations['z_dir'] = z_dir;
         line_annotations['scaled'] = this.scaledBonudingBoxes;
         line_annotations['scale_factor'] = this.scaleFactor;
         console.log(line_annotations);
@@ -431,11 +434,11 @@
 //            url: "${image_URL}",
 //            boxes: ${bounding_box},
 
-            boxes: [{'y': 157, 'x': 323, 'w': 17, 'h': 24},
-                {'y': 245, 'x': 647, 'w': 27, 'h': 35},
-                {'y': 219, 'x': 487, 'w': 14, 'h': 19},
-                {'y': 218, 'x': 575, 'w': 15, 'h': 21}],
-            url: "https://s3.amazonaws.com/wpi-classroom/video9_frame562.jpg",
+            boxes: [{'y': 160, 'x': 526, 'w': 37, 'h': 53}, {'y': 197, 'x': 313, 'w': 26, 'h': 33},
+                {'y': 140, 'x': 310, 'w': 20, 'h': 26}, {'y': 156, 'x': 144, 'w': 28, 'h': 27},
+                {'y': 161, 'x': 83, 'w': 22, 'h': 27}, {'y': 146, 'x': 496, 'w': 22, 'h': 31},
+                {'y': 133, 'x': 379, 'w': 22, 'h': 26}],
+            url: "https://s3.amazonaws.com/wpi-classroom/video3_frame15.jpg",
 
             onchange: function (entries) {
                 console.log(entries);
