@@ -90,27 +90,14 @@
     <strong>Step 2</strong> Decide visually whether the person is looking at an object/person shown somewhere inside the image or outside the image.
     <ul>
         <li>If the person's gaze target is shown INSIDE the image: Click and drag the mouse pointer from inside of the bounding box to the direction of the person's eye-gaze -- this will draw the gaze line. Drag until you reach the specific object/person that the person is looking at, then release.</li>
-        <li>If the person's gaze target is shown OUTSIDE the image: Click on the bounding box (again) so that an "X" appears.</li>
+        <li>If the person's gaze target is shown OUTSIDE the image: Click and drag the mouse pointer from inside of the bounding box to the direction of the person's eye-gaze -- this will draw the gaze line. Drag until you go over the border of the image.</li>
     </ul>
     <strong>Step 3</strong> Next, look at the set of questions which will appear on the side of the image. Select the appropriate answers.<br>
     <ul>
-        <li>If the person is looking at something in the picture, choose "Inside" for the first question. Otherwise, choose "Outside".</li>
-        <li>Imagine the camera used to take this picture is placed where you are sitting now.</li>
-        <ul>
-            <li>If the person is looking at something towards the direction of where the camera is located, choose "Towards" for the second question. If the person is looking at something away from the camera, choose "Away". If you are unsure whether the person is looking towards or away from the camera, choose "Unclear". For clarity, check out the pictorial representations of this concept.</li>
-        </ul>
+        <li>If the person is looking at something in the picture, choose "Inside". If the person is looking at something that is not in the picture, choose "Outside".</li>
     </ul>
-    <strong>Step 4</strong> Repeat this process for all faces in the image.
+    <strong>Step 4</strong> Repeat this process for all faces in the image.<br>
     <strong>Step 5</strong> Click "Submit" when gazes of all faces have been drawn.
-    <br>
-    <br>
-    <h3>Pictorial example of people looking towards and looking away from the direction of the camera:</h3>
-    <br>
-    <img src="https://s3.amazonaws.com/example-tutorial/svg_looking_towards.svg" alt="Example of looking towards" style="width:500px;height:500px;">
-    <img src="https://s3.amazonaws.com/example-tutorial/svg_looking_away.svg" alt="Example of looking away" style="width:500px;height:500px;">
-    <br>
-    Choose <strong>towards</strong> if the person is looking towards the direction of where the camera is located, even though that person is not looking directly into the camera. As shown in the pictures above, if a person is looking in the white region (whether looking up or down), the person is looking <strong>towards</strong> the camera and if a person is looking in the brown region (whether looking up or down), the person is looking <strong>away</strong> from the camera.
-    <br>
     <br>
     <h3>Example annotation process video:</h3>
     <br>
@@ -143,18 +130,6 @@
 
             <input type="radio" id="out_frame" name="in_out_frame" value="out_frame">
             <label for="out_frame">Outside</label>
-        </div>
-
-        Is the person looking <strong>Towards</strong> the camera or <strong>Away</strong> from the camera?
-        <div id="gaze_z">
-            <input type="radio" id="z_dir_towards" name="z_direction" value="towards">
-            <label for="z_dir_towards">Towards</label>
-
-            <input type="radio" id="z_dir_away" name="z_direction" value="away">
-            <label for="z_dir_away">Away</label>
-
-            <input type="radio" id="z_dir_unclear" name="z_direction" value="unclear">
-            <label for="z_dir_unclear">Unclear</label>
         </div>
         <div>
             <button type="button" id="btn_save">Save</button>
@@ -433,7 +408,7 @@
     Annotator.prototype.save = function() {
         var in_out_frame = $("input[name=in_out_frame]:checked").val();
         var z_dir = $("input[name=z_direction]:checked").val();
-        if (in_out_frame === undefined || z_dir === undefined) {
+        if (in_out_frame === undefined) {
             return alert("Please complete all selections");
         }
         line_annotations['in_out_frame'] = in_out_frame;
