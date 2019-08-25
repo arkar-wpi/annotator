@@ -1,0 +1,426 @@
+<meta charset="utf-8" />
+<title></title>
+<style type="text/css">html {
+    font-family: sans-serif;
+}
+
+label {
+    margin-right: 15px;
+    line-height: 32px;
+}
+
+input[type=submit] {
+    color: white;
+    background-color: #ff3a26;
+    padding: 5px 10px;
+    border-radius: 0;
+    border: 0;
+    font-size: 14px;
+}
+
+button,
+legend {
+    color: white;
+    background-color: black;
+    padding: 5px 10px;
+    border-radius: 0;
+    border: 0;
+    font-size: 14px;
+}
+
+input[type=submit]:hover,
+input[type=submit]:focus {
+    color: #0a0a0a;
+}
+
+button:hover,
+button:focus {
+    color: #999;
+}
+
+button:active {
+    background-color: white;
+    color: black;
+    outline: 1px solid black;
+}
+
+canvas {
+    border: 1px solid black;
+}
+
+.container_annotator {
+    float:left;
+    margin-right: 10px;
+}
+
+#canvas_container {
+    position: relative;
+    float:left;
+
+}
+
+#attribute_container {
+    position: relative;
+    float: left;
+    display: none;
+    border: 1px solid black;
+    padding: 10px;
+}
+
+#canvas, #tempCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+</style>
+<h1>Where is he/she looking? Draw a line from the person&#39;s face to the object he/she is looking at.</h1>
+
+<div>
+    <h3>Instructions</h3>
+    <strong>Step 1</strong> Click on one of the faces that has a blue box around it. The bounding box will be selected (as indicated by the red box).
+
+    <ul>
+        <li>If the box is incorrectly placed around non-head objects, ignore that box.</li>
+    </ul>
+    <strong>Step 2</strong> Decide visually whether the person is looking at an object/person shown somewhere inside the image or outside the image.
+
+    <ul>
+        <li>If the person&#39;s gaze target is shown INSIDE the image: Click and drag the mouse pointer from inside of the bounding box to the direction of the person&#39;s eye-gaze -- this will draw the gaze line. Drag until you reach the specific object/person that the person is looking at, then release.</li>
+        <li>If the person&#39;s gaze target is shown OUTSIDE the image: Click and drag the mouse pointer from inside of the bounding box to the direction of the person&#39;s eye-gaze -- this will draw the gaze line. Drag until you go over the border of the image.</li>
+    </ul>
+    <strong>Step 3</strong> Next, look at the set of questions which will appear on the side of the image. Select the appropriate answers.
+
+    <ul>
+        <li>If the person is looking at something in the picture, choose &quot;Inside&quot;. If the person is looking at something that is not in the picture, choose &quot;Outside&quot;.</li>
+    </ul>
+    &nbsp;
+
+    <h3>Example gaze directions (both inside and outside):</h3>
+    <img alt="Example of gaze directions" src="https://s3.amazonaws.com/example-tutorial/example_image.jpg" style="width:500px;height:400px;" /><br />
+    <strong>Step 4</strong> Repeat this process for all faces in the image.<br />
+    <strong>Step 5</strong> Click &quot;Submit&quot; when gazes of all faces have been drawn.
+
+    <h3>Example annotation process video:</h3>
+    &nbsp;
+
+    <video controls="" height="500" width="1200"><source src="https://s3.amazonaws.com/example-tutorial/example_without_zdir.mp4" type="video/mp4" /> Your browser does not support the video tag.</video>
+</div>
+
+<p id="button_paragraph"><button id="clear_all" type="button">Clear All</button><button id="undo" type="button">Undo</button><input id="annotation_data" name="annotation_data" type="hidden" /></p>
+
+<div class="container_annotator" id="canvas_container"><canvas height="500" id="canvas" oncontextmenu="return false" width="500"></canvas> <canvas height="500" id="tempCanvas" oncontextmenu="return false" width="500"></canvas></div>
+
+<div class="container_annotator" id="attribute_container">
+    <form name="gaze_attributes">Is the person looking at something <strong>Inside</strong> or <strong>Outside</strong> the picture?
+
+        <div id="gaze_in_out"><input id="in_frame" name="in_out_frame" type="radio" value="in_frame" /> <label for="in_frame">Inside</label> <input id="out_frame" name="in_out_frame" type="radio" value="out_frame" /> <label for="out_frame">Outside</label></div>
+
+        <div><button id="btn_save" type="button">Save</button></div>
+    </form>
+</div>
+
+<p><br />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script><script>
+        var line_annotations;
+
+        function Annotator(options) {
+            this.annotations = [];
+            this.canvas = document.getElementById('canvas');
+            this.tempCanvas = document.getElementById('tempCanvas');
+            this.width_limit = 1000;
+            this.press = 0;
+            this.box_selected = 0;
+            this.ctx = canvas.getContext('2d');
+            this.tempCtx = tempCanvas.getContext('2d');
+            this.boxes = options.boxes;
+            this.url = options.url;
+
+            this.scaledBonudingBoxes = false;
+            this.scaleFactor = 1;
+
+            this.loadImage();
+
+            this.clearAllButton = document.getElementById("clear_all");
+            this.clearAllButton.addEventListener('click', this.clearAll.bind(this));
+
+            this.undoButton = document.getElementById("undo");
+            this.undoButton.addEventListener('click', this.undo.bind(this));
+
+            this.saveButton = document.getElementById("btn_save");
+            this.saveButton.addEventListener('click', this.save.bind(this));
+
+            this.noTargetElements = document.getElementsByClassName("no_target");
+
+            this.tempCanvas.addEventListener('mousedown', this.canvasMouseDown.bind(this));
+            this.tempCanvas.addEventListener('mouseup', this.canvasMouseUp.bind(this));
+            this.tempCanvas.addEventListener('mousemove', this.canvasMouseMove.bind(this));
+            this.tempCanvas.addEventListener('mouseenter', this.canvasMouseEnter.bind(this));
+            this.tempCanvas.addEventListener('mouseout', this.canvasMouseOut.bind(this));
+
+            this.onchange = options.onchange
+
+        }
+
+        Annotator.prototype.scaleBoundingBoxes = function() {
+            if (!this.scaledBonudingBoxes) {
+                for (var i = 0; i < this.boxes.length; i++) {
+                    let b = this.boxes[i];
+                    this.boxes[i] = {
+                        'x': b['x'] * this.scaleFactor,
+                        'y': b['y'] * this.scaleFactor,
+                        'w': b['w'] * this.scaleFactor,
+                        'h': b['h'] * this.scaleFactor
+                    };
+                }
+                this.scaledBonudingBoxes = true;
+            }
+        };
+
+        Annotator.prototype.drawBoxes = function () {
+            for (var i = 0; i < this.boxes.length; i++) {
+                let b = this.boxes[i];
+                this.ctx.strokeStyle = '#4ca2f4';
+                this.ctx.lineWidth = 2;
+                this.ctx.rect(b['x'],b['y'],b['w'],b['h']);
+                this.ctx.stroke();
+            }
+        };
+
+        Annotator.prototype.drawLine = function (context, toX, toY) {
+            context.strokeStyle = '#f44a41';
+            context.beginPath();
+            context.moveTo(this.startX, this.startY);
+            context.lineTo(this.endX, this.endY);
+            context.lineWidth = 2;
+            context.stroke();
+            context.beginPath();
+            context.arc(this.endX, this.endY, 5, 0, 2 * Math.PI, false);
+            context.fillStyle = '#f44a41';
+            context.fill();
+            context.stroke();
+        };
+
+        Annotator.prototype.drawCross = function (toX, toY) {
+            let x = toX;
+            let y = toY;
+            this.ctx.strokeStyle = '#41f4eb';
+            this.ctx.beginPath();
+
+            this.ctx.moveTo(x - 10, y - 10);
+            this.ctx.lineTo(x + 10, y + 10);
+            this.ctx.lineWidth = 2;
+            this.ctx.stroke();
+
+            this.ctx.moveTo(x + 10, y - 10);
+            this.ctx.lineTo(x - 10, y + 10);
+            this.ctx.lineWidth = 2;
+            this.ctx.stroke();
+
+        };
+
+        Annotator.prototype.transferLine = function (toX, toY) {
+            let distance = Math.sqrt(Math.pow(this.startX - toX, 2) + Math.pow(this.startY - toY, 2))
+            if (distance < 3) {
+                this.drawCross(toX, toY);
+            } else {
+                this.endX = toX;
+                this.endY = toY;
+                this.drawLine(this.ctx, toX, toY);
+            }
+        };
+
+        Annotator.prototype.clearBoxes = function() {
+            $("[type=radio]").removeAttr("checked");
+        };
+
+        Annotator.prototype.canvasMouseEnter = function (e) {
+            this.tempCanvas.style.cursor = 'crosshair';
+        };
+
+        Annotator.prototype.canvasMouseDown = function (e) {
+
+            while ($("#attribute_container").is(":visible")) { //form validation
+                return alert("Please complete all selections");
+            }
+
+            var pos = this.getCoords(e);
+            if (this.box_selected === 0) {
+                for (var i = 0; i < this.boxes.length; i++) {
+                    let b = this.boxes[i];
+                    if (pos['x'] >= b['x'] && pos['x'] <= (b['x'] + b['w']) && pos['y'] >= b['y'] && pos['y'] <= (b['y'] + b['h'])) {
+
+                        $("#attribute_container").hide();
+                        this.sel_box = b;
+                        this.tempCtx.beginPath();
+
+                        this.tempCtx.strokeStyle = 'red';
+                        this.tempCtx.lineWidth = 3;
+                        this.tempCtx.rect(b['x'],b['y'],b['w'],b['h']);
+                        this.tempCtx.stroke();
+
+                        this.box_selected = 1;
+                    }
+                }
+            }
+            else {
+                if (pos['x'] >= this.sel_box['x'] && pos['x'] <= (this.sel_box['x'] + this.sel_box['w']) && pos['y'] >= this.sel_box['y'] && pos['y'] <= (this.sel_box['y'] + this.sel_box['h'])) {
+                    this.press = 1;
+                    this.box_selected = 0;
+                    this.startX = pos['x'];
+                    this.startY = pos['y'];
+                }
+                else {
+                    this.box_selected = 0;
+                    $("#attribute_container").hide();
+                    this.refreshLines();
+                }
+            }
+        };
+
+        Annotator.prototype.canvasMouseMove = function (e) {
+            if (this.press === 1) {
+                let pos = this.getCoords(e);
+                this.endX = pos['x'];
+                this.endY = pos['y'];
+
+                this.refreshLines();
+                this.drawLine(this.tempCtx, this.endX, this.endY);
+            }
+        };
+
+        Annotator.prototype.canvasMouseUp = function (e) {
+
+            if (this.press === 1) {
+                let pos = this.getCoords(e);
+                this.press = 0;
+
+                this.endX = pos['x'];
+                this.endY = pos['y'];
+                this.refreshLines();
+                this.transferLine(this.endX, this.endY);
+
+                let dict_annotation = {x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY, bbox_dim: this.sel_box};
+                line_annotations = dict_annotation;
+                this.annotations.push(dict_annotation);
+                $("#attribute_container").show();
+                return this.onchange(this.annotations);
+            }
+        };
+
+        Annotator.prototype.canvasMouseOut = function (e) {
+            if (this.press === 1) {
+                let pos = this.getCoords(e);
+                this.press = 0;
+
+                this.endX = pos['x'];
+                this.endY = pos['y'];
+                this.refreshLines();
+                this.transferLine(this.endX, this.endY);
+
+                let dict_annotation = {x1: this.startX, y1: this.startY, x2: this.endX, y2: this.endY, bbox_dim: this.sel_box};
+                line_annotations = dict_annotation;
+                this.annotations.push(dict_annotation);
+                this.press = 0;
+                $("#attribute_container").show();
+                return this.onchange(this.annotations);
+            }
+        };
+
+        Annotator.prototype.loadImage = function () {
+            this.img = new Image();
+            this.img.src = this.url;
+            this.img.onload = function () {
+                let width = this.img.width;
+                let height = this.img.height;
+                if (this.img.width > this.width_limit) {
+                    this.scaleFactor = this.width_limit/width;
+                    width = width * this.scaleFactor;
+                    height = height * this.scaleFactor;
+                    this.scaleBoundingBoxes();
+                }
+                this.canvas.width = width;
+                this.canvas.height = height;
+                this.tempCanvas.width = width;
+                this.tempCanvas.height = height;
+
+                $("#canvas_container").width(width).height(height);
+                this.ctx.drawImage(this.img, 0, 0, this.img.width, this.img.height, 0, 0, this.canvas.width, this.canvas.height);
+                this.drawBoxes();
+
+                for (var i = 0; i < this.annotations.length; i++) {
+                    var l = this.annotations[i];
+                    this.startX = l['x1'];
+                    this.startY = l['y1'];
+                    this.transferLine(l['x2'], l['y2']);
+                }
+            }.bind(this);
+        };
+
+        Annotator.prototype.refreshLines = function () {
+            this.tempCtx.clearRect(0, 0, this.tempCanvas.width, this.canvas.height);
+        };
+
+        Annotator.prototype.resetStats = function () {
+            this.press = 0;
+            this.box_selected = 0;
+            $("#attribute_container").hide();
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.loadImage();
+        };
+
+        Annotator.prototype.undo = function () {
+            let last_point = this.annotations.pop();
+            this.resetStats();
+            return this.onchange(this.annotations);
+        };
+
+        Annotator.prototype.clearAll = function () {
+            this.annotations = [];
+            this.resetStats();
+            return this.onchange(this.annotations);
+        };
+
+        Annotator.prototype.save = function() {
+            var in_out_frame = $("input[name=in_out_frame]:checked").val();
+            var z_dir = $("input[name=z_direction]:checked").val();
+            if (in_out_frame === undefined) {
+                return alert("Please complete all selections");
+            }
+            line_annotations['in_out_frame'] = in_out_frame;
+            line_annotations['scaled'] = this.scaledBonudingBoxes;
+            line_annotations['scale_factor'] = this.scaleFactor;
+            $("#attribute_container").hide();
+            this.clearBoxes();
+            return this.onchange(this.annotations);
+        };
+
+        Annotator.prototype.getCoords = function (e) {
+            let r = canvas.getBoundingClientRect();
+            return {x: e.clientX - r.left, y: e.clientY - r.top}
+        };
+
+        $(document).ready(function () {
+            new Annotator({
+                url: "${image_URL}",
+                boxes: ${bounding_box},
+                onchange: function (entries) {
+                    $("#annotation_data").val(JSON.stringify(entries));
+
+                    if (entries.length > 0 &&
+                        assignment_id !== "" &&
+                        assignment_id !== "ASSIGNMENT_ID_NOT_AVAILABLE") {
+                        $("#submitButton").removeAttr("disabled");
+                    } else {
+                        $("#submitButton").attr("disabled", "disabled");
+                    }
+                }
+            });
+
+            var assignment_id = turkGetParam('assignmentId', "");
+            $('#submitButton').attr("disabled", "disabled");
+            $("#submitButton").detach().appendTo("#button_paragraph");
+            if (assignment_id === "ASSIGNMENT_ID_NOT_AVAILABLE") {
+                $("#submitButton").val("This is in preview mode");
+            }
+        });
+    </script></p>
